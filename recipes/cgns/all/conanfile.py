@@ -61,7 +61,10 @@ class CgnsConan(ConanFile):
     def validate(self):
         if self.info.options.parallel and not (self.info.options.with_hdf5 and self.dependencies["hdf5"].options.parallel):
             raise ConanInvalidConfiguration("The option 'parallel' requires HDF5 with parallel=True")
-        if self.info.options.parallel and self.info.options.with_hdf5 and self.dependencies["hdf5"].options.enable_cxx:
+        if (
+            self.info.options.parallel
+            and self.dependencies["hdf5"].options.enable_cxx
+        ):
             raise ConanInvalidConfiguration("The option 'parallel' requires HDF5 with enable_cxx=False")
 
     def source(self):

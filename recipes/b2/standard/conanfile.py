@@ -47,7 +47,10 @@ class B2Conan(ConanFile):
     }
 
     def configure(self):
-        if (self.options.toolset == 'cxx' or self.options.toolset == 'cross-cxx') and not self.options.use_cxx_env:
+        if (
+            self.options.toolset in ['cxx', 'cross-cxx']
+            and not self.options.use_cxx_env
+        ):
             raise ConanInvalidConfiguration(
                 "Option toolset 'cxx' and 'cross-cxx' requires 'use_cxx_env=True'")
 
@@ -59,7 +62,7 @@ class B2Conan(ConanFile):
         use_windows_commands = os.name == 'nt'
         command = "build" if use_windows_commands else "./build.sh"
         if self.options.toolset != 'auto':
-            command += " "+str(self.options.toolset)
+            command += f" {str(self.options.toolset)}"
         build_dir = os.path.join(self.source_folder, "source")
         engine_dir = os.path.join(build_dir, "src", "engine")
         os.chdir(engine_dir)
@@ -76,10 +79,10 @@ class B2Conan(ConanFile):
             engine_dir, "b2.exe" if use_windows_commands else "b2")
         if self.options.toolset != 'auto':
             full_command = "{0} --ignore-site-config --prefix=../output --abbreviate-paths" \
-                           " toolset={1} install".format(command, self.options.toolset)
+                               " toolset={1} install".format(command, self.options.toolset)
         else:
             full_command = "{0} --ignore-site-config --prefix=../output --abbreviate-paths" \
-                           " install".format(command)
+                               " install".format(command)
         self.run(full_command)
 
     def package(self):

@@ -87,10 +87,10 @@ class CoinCglConan(ConanFile):
         if self.settings.compiler == "Visual Studio":
             with tools.vcvars(self.settings):
                 env = {
-                    "CC": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                    "CXX": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                    "LD": "{} link -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                    "AR": "{} lib".format(tools.unix_path(self._user_info_build["automake"].ar_lib)),
+                    "CC": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
+                    "CXX": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
+                    "LD": f'{tools.unix_path(self._user_info_build["automake"].compile)} link -nologo',
+                    "AR": f'{tools.unix_path(self._user_info_build["automake"].ar_lib)} lib',
                 }
                 with tools.environment_append(env):
                     yield
@@ -104,7 +104,7 @@ class CoinCglConan(ConanFile):
         self._autotools.libs = []
         yes_no = lambda v: "yes" if v else "no"
         configure_args = [
-            "--enable-shared={}".format(yes_no(self.options.shared)),
+            f"--enable-shared={yes_no(self.options.shared)}",
             "--without-blas",
             "--without-lapack",
         ]

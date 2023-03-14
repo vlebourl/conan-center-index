@@ -60,7 +60,10 @@ class EasyhttpcppConan(ConanFile):
         return comps
 
     def validate(self):
-        if any([not self.dependencies["poco"].options.get_safe(comp, False) for comp in self._required_poco_components]):
+        if any(
+            not self.dependencies["poco"].options.get_safe(comp, False)
+            for comp in self._required_poco_components
+        ):
             raise ConanInvalidConfiguration(
                 f"{self.ref} requires the following poco options enabled: {', '.join(self._required_poco_components)}"
             )

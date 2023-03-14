@@ -74,7 +74,7 @@ class BotanConan(ConanFile):
 
     @property
     def _is_x86(self):
-        return str(self.settings.arch) in ['x86', 'x86_64']
+        return str(self.settings.arch) in {'x86', 'x86_64'}
 
     @property
     def _is_ppc(self):
@@ -142,7 +142,10 @@ class BotanConan(ConanFile):
 
     def validate(self):
         if self.options.with_boost:
-            miss_boost_required_comp = any(getattr(self.options['boost'], 'without_{}'.format(boost_comp), True) for boost_comp in self._required_boost_components)
+            miss_boost_required_comp = any(
+                getattr(self.options['boost'], f'without_{boost_comp}', True)
+                for boost_comp in self._required_boost_components
+            )
             if self.options['boost'].header_only or self.options['boost'].shared or self.options['boost'].magic_autolink or miss_boost_required_comp:
                 raise ConanInvalidConfiguration('{0} requires non-header-only static boost, without magic_autolink, and with these components: {1}'.format(self.name, ', '.join(self._required_boost_components)))
 
@@ -159,16 +162,20 @@ class BotanConan(ConanFile):
         elif compiler == 'clang' and compiler.libcxx not in ['libstdc++11', 'libc++']:
             raise ConanInvalidConfiguration(
                 'Using Botan with Clang on Linux requires either "compiler.libcxx=libstdc++11" ' \
-                'or "compiler.libcxx=libc++"')
+                    'or "compiler.libcxx=libc++"')
 
         # Some older compilers cannot handle the amalgamated build anymore
         # See also https://github.com/randombit/botan/issues/2328
-        if tools.Version(self.version) >= '2.14.0' and self.options.amalgamation:
-            if (compiler == 'apple-clang' and version < '10') or \
-               (compiler == 'gcc' and version < '8') or \
-               (compiler == 'clang' and version < '7'):
-                raise ConanInvalidConfiguration(
-                    'botan amalgamation is not supported for {}/{}'.format(compiler, version))
+        if (
+            tools.Version(self.version) >= '2.14.0'
+            and self.options.amalgamation
+            and (compiler == 'apple-clang' and version < '10')
+            or (compiler == 'gcc' and version < '8')
+            or (compiler == 'clang' and version < '7')
+        ):
+            raise ConanInvalidConfiguration(
+                f'botan amalgamation is not supported for {compiler}/{version}'
+            )
 
         if self.options.get_safe("single_amalgamation", False) and not self.options.amalgamation:
             raise ConanInvalidConfiguration("botan:single_amalgamation=True requires botan:amalgamation=True")
@@ -221,10 +228,16 @@ class BotanConan(ConanFile):
         # Since botan has a custom build system, we need to specifically inject
         # these build parameters so that it picks up the correct dependencies.
         dep_cpp_info = self.deps_cpp_info[dependency]
-        return \
-            ['--with-external-includedir={}'.format(include_path) for include_path in dep_cpp_info.include_paths] + \
-            ['--with-external-libdir={}'.format(lib_path) for lib_path in dep_cpp_info.lib_paths] + \
-            ['--define-build-macro={}'.format(define) for define in dep_cpp_info.defines]
+        return (
+            [
+                f'--with-external-includedir={include_path}'
+                for include_path in dep_cpp_info.include_paths
+            ]
+            + [
+                f'--with-external-libdir={lib_path}'
+                for lib_path in dep_cpp_info.lib_paths
+            ]
+        ) + [f'--define-build-macro={define}' for define in dep_cpp_info.defines]
 
     @property
     def _configure_cmd(self):

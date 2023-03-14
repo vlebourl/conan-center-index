@@ -34,7 +34,7 @@ class CgltfConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        os.rename(self.name + "-" + self.version, self._source_subfolder)
+        os.rename(f"{self.name}-{self.version}", self._source_subfolder)
 
     def _create_source_files(self):
         cgltf_c = (

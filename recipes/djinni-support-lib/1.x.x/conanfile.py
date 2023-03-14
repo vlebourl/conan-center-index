@@ -97,14 +97,13 @@ class DjinniSuppotLib(ConanFile):
                 raise ConanInvalidConfiguration("C++/CLI has been enabled on a non-Windows operating system. This is not supported.")
             if self.options.shared:
                 raise ConanInvalidConfiguration("C++/CLI does not support building as shared library")
-            if self.settings.compiler.runtime == "MT" or self.settings.compiler.runtime == "MTd":
+            if self.settings.compiler.runtime in ["MT", "MTd"]:
                 raise ConanInvalidConfiguration("'/clr' and '/MT' command-line options are incompatible")
             if self._objc_support or self._jni_support or self._python_support:
                 raise ConanInvalidConfiguration(
                     "C++/CLI is not yet supported with other languages enabled as well. Disable 'with_jni', 'with_objc' and 'with_python' options for a valid configuration.")
-        if self._python_support:
-            if self.settings.os == "Windows":
-                raise ConanInvalidConfiguration("Python on Windows is not fully yet supported, please see https://github.com/cross-language-cpp/djinni-support-lib/issues.")
+        if self._python_support and self.settings.os == "Windows":
+            raise ConanInvalidConfiguration("Python on Windows is not fully yet supported, please see https://github.com/cross-language-cpp/djinni-support-lib/issues.")
         if self.settings.get_safe("compiler.cppstd"):
             tools.check_min_cppstd(self, "17")
         try:

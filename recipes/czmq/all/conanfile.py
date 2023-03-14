@@ -44,12 +44,12 @@ class CzmqConan(ConanFile):
         export_conandata_patches(self)
 
     def config_options(self):
-        if self.settings.os == "Windows":
+        if self.settings.os == "Linux":
+            del self.options.with_systemd
+        elif self.settings.os == "Windows":
             del self.options.fPIC
             # libuuid is not available on Windows
             del self.options.with_libuuid
-        if self.settings.os == "Linux":
-            del self.options.with_systemd
 
     def configure(self):
         if self.options.shared:
@@ -125,14 +125,17 @@ class CzmqConan(ConanFile):
         )
 
     def _create_cmake_module_alias_targets(self, module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent(f"""\
+        content = "".join(
+            textwrap.dedent(
+                f"""\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """)
+            """
+            )
+            for alias, aliased in targets.items()
+        )
         save(self, module_file, content)
 
     @property

@@ -42,7 +42,7 @@ class EazylzmaConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = self.name + "-" + self.version
+        extracted_dir = f"{self.name}-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     def build(self):
@@ -67,6 +67,7 @@ class EazylzmaConan(ConanFile):
         self.cpp_info.libs = [self._libname]
         if self.options.shared:
             self.cpp_info.defines = ["EASYLZMA_SHARED"]
-        if self.settings.compiler == "Visual Studio":
-            if "d" in str(self.settings.compiler.runtime):
-                self.cpp_info.defines.append("DEBUG")
+        if self.settings.compiler == "Visual Studio" and "d" in str(
+            self.settings.compiler.runtime
+        ):
+            self.cpp_info.defines.append("DEBUG")

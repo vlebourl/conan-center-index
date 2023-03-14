@@ -128,7 +128,7 @@ class AravisConan(ConanFile):
         if not self.options.shared and is_msvc(self):
             with chdir(self, path):
                 for filename_old in glob.glob("*.a"):
-                    filename_new = filename_old[3:-2] + ".lib"
+                    filename_new = f"{filename_old[3:-2]}.lib"
                     self.output.info(f"rename {filename_old} into {filename_new}")
                     rename(self, filename_old, filename_new)
 

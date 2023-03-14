@@ -57,17 +57,21 @@ class ContinuableConan(ConanFile):
         compiler = str(self.settings.compiler)
         if compiler not in minimal_version:
             self.output.warn(
-                "%s recipe lacks information about the %s compiler standard version support" % (self.name, compiler))
+                f"{self.name} recipe lacks information about the {compiler} compiler standard version support"
+            )
             self.output.warn(
-                "%s requires a compiler that supports at least C++%s" % (self.name, minimal_cpp_standard))
+                f"{self.name} requires a compiler that supports at least C++{minimal_cpp_standard}"
+            )
             return
         version = tools.Version(self.settings.compiler.version)
         if version < minimal_version[compiler]:
-            raise ConanInvalidConfiguration("%s requires a compiler that supports at least C++%s" % (self.name, minimal_cpp_standard))
+            raise ConanInvalidConfiguration(
+                f"{self.name} requires a compiler that supports at least C++{minimal_cpp_standard}"
+            )
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = "continuable-" + self.version
+        extracted_dir = f"continuable-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     def package(self):

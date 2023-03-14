@@ -17,7 +17,7 @@ class TestPackageConan(ConanFile):
 
     def build(self):
         copy(self, "pure2-hello.cpp2", src=self.recipe_folder, dst=self.build_folder)
-        self.run("cppfront {}".format(os.path.join(self.build_folder, "pure2-hello.cpp2")))
+        self.run(f'cppfront {os.path.join(self.build_folder, "pure2-hello.cpp2")}')
 
     def test(self):
         self.run("cppfront -h")

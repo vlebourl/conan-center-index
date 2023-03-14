@@ -52,7 +52,7 @@ class ceressolverConan(ConanFile):
 
     @property
     def _is_msvc(self):
-        return str(self.settings.compiler) in ["Visual Studio", "msvc"]
+        return str(self.settings.compiler) in {"Visual Studio", "msvc"}
 
     def export_sources(self):
         self.copy("CMakeLists.txt")
@@ -158,11 +158,9 @@ class ceressolverConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "Ceres")
         self.cpp_info.set_property("cmake_target_name", "Ceres::ceres")
 
-        libsuffix = ""
-        if self.settings.build_type == "Debug":
-            libsuffix = "-debug"
+        libsuffix = "-debug" if self.settings.build_type == "Debug" else ""
         # TODO: back to global scope in conan v2 once cmake_find_package* generators removed
-        self.cpp_info.components["ceres"].libs = ["ceres{}".format(libsuffix)]
+        self.cpp_info.components["ceres"].libs = [f"ceres{libsuffix}"]
         self.cpp_info.components["ceres"].includedirs = ["include", os.path.join("include","ceres")]
         if not self.options.use_glog:
             self.cpp_info.components["ceres"].includedirs.append(os.path.join("include","ceres", "internal", "miniglog"))
@@ -179,8 +177,7 @@ class ceressolverConan(ConanFile):
             self.cpp_info.components["ceres"].requires.append("gflags::gflags")
         if self.options.use_TBB:
             self.cpp_info.components["ceres"].requires.append("onetbb::onetbb")
-        libcxx = tools.stdcpp_library(self)
-        if libcxx:
+        if libcxx := tools.stdcpp_library(self):
             self.cpp_info.components["ceres"].system_libs.append(libcxx)
 
         # TODO: to remove in conan v2 once cmake_find_package* generators removed

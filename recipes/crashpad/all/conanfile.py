@@ -65,17 +65,24 @@ class CrashpadConan(ConanFile):
             self.requires("openssl/1.1.1o")
 
     def validate(self):
-        if self.settings.compiler == "Visual Studio":
-            if self.options.http_transport in ("libcurl", "socket"):
-                raise ConanInvalidConfiguration("http_transport={} is not valid when building with Visual Studio".format(self.options.http_transport))
-        if self.options.http_transport == "libcurl":
-            if not self.options["libcurl"].shared:
-                # FIXME: is this true?
-                self.output.warn("crashpad needs a shared libcurl library")
-        min_compiler_version = self._minimum_compiler_cxx14()
-        if min_compiler_version:
+        if (
+            self.settings.compiler == "Visual Studio"
+            and self.options.http_transport in ("libcurl", "socket")
+        ):
+            raise ConanInvalidConfiguration(
+                f"http_transport={self.options.http_transport} is not valid when building with Visual Studio"
+            )
+        if (
+            self.options.http_transport == "libcurl"
+            and not self.options["libcurl"].shared
+        ):
+            # FIXME: is this true?
+            self.output.warn("crashpad needs a shared libcurl library")
+        if min_compiler_version := self._minimum_compiler_cxx14():
             if tools.Version(self.settings.compiler.version) < min_compiler_version:
-                raise ConanInvalidConfiguration("crashpad needs a c++14 capable compiler, version >= {}".format(min_compiler_version))
+                raise ConanInvalidConfiguration(
+                    f"crashpad needs a c++14 capable compiler, version >= {min_compiler_version}"
+                )
         else:
             self.output.warn("This recipe does not know about the current compiler and assumes it has sufficient c++14 supports.")
         if self.settings.compiler.cppstd:
@@ -89,10 +96,7 @@ class CrashpadConan(ConanFile):
     @property
     def _gn_os(self):
         if tools.is_apple_os(self.settings.os):
-            if self.settings.os == "Macos":
-                return "mac"
-            else:
-                return "ios"
+            return "mac" if self.settings.os == "Macos" else "ios"
         return {
             "Windows": "win",
         }.get(str(self.settings.os), str(self.settings.os).lower())
@@ -113,21 +117,22 @@ class CrashpadConan(ConanFile):
         else:
             env_defaults = {}
             if self.settings.compiler == "gcc":
-                env_defaults.update({
+                env_defaults |= {
                     "CC": "gcc",
                     "CXX": "g++",
                     "LD": "g++",
-                })
+                }
             elif self.settings.compiler in ("clang", "apple-clang"):
-                env_defaults.update({
+                env_defaults |= {
                     "CC": "clang",
                     "CXX": "clang++",
                     "LD": "clang++",
-                })
-            env = {}
-            for key, value in env_defaults.items():
-                if not tools.get_env(key):
-                    env[key] = value
+                }
+            env = {
+                key: value
+                for key, value in env_defaults.items()
+                if not tools.get_env(key)
+            }
             with tools.environment_append(env):
                 yield
 
@@ -172,13 +177,14 @@ class CrashpadConan(ConanFile):
             extra_cflags.append("-fPIC")
         extra_cflags.extend("-I {}".format(inc) for inc in autotools.include_paths)
         extra_ldflags.extend("-{}{}".format("LIBPATH:" if self.settings.compiler == "Visual Studio" else "L ", libdir) for libdir in autotools.library_paths)
-        if self.settings.compiler == "clang":
-            if self.settings.compiler.get_safe("libcxx"):
-                stdlib = {
-                    "libstdc++11": "libstdc++",
-                }.get(str(self.settings.compiler.libcxx), str(self.settings.compiler.libcxx))
-                extra_cflags_cc.append("-stdlib={}".format(stdlib))
-                extra_ldflags.append("-stdlib={}".format(stdlib))
+        if self.settings.compiler == "clang" and self.settings.compiler.get_safe(
+            "libcxx"
+        ):
+            stdlib = {
+                "libstdc++11": "libstdc++",
+            }.get(str(self.settings.compiler.libcxx), str(self.settings.compiler.libcxx))
+            extra_cflags_cc.append("-stdlib={}".format(stdlib))
+            extra_ldflags.append("-stdlib={}".format(stdlib))
         gn_args = [
             "host_os=\\\"{}\\\"".format(self._gn_os),
             "host_cpu=\\\"{}\\\"".format(self._gn_arch),
@@ -203,6 +209,7 @@ class CrashpadConan(ConanFile):
         def lib_filename(name):
             prefix, suffix = ("", ".lib")  if self.settings.compiler == "Visual Studio" else ("lib", ".a")
             return "{}{}{}".format(prefix, name, suffix)
+
         tools.rename(os.path.join(self._source_subfolder, "out", "Default", "obj", "client", lib_filename("common")),
                      os.path.join(self._source_subfolder, "out", "Default", "obj", "client", lib_filename("client_common")))
         tools.rename(os.path.join(self._source_subfolder, "out", "Default", "obj", "handler", lib_filename("common")),
@@ -303,5 +310,5 @@ class CrashpadConan(ConanFile):
         self.cpp_info.components["handler"].requires = ["client", "util", "handler_common", "minidump", "snapshot"] + extra_handler_req
 
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.output.info(f"Appending PATH environment variable: {bin_path}")
         self.env_info.PATH.append(bin_path)

@@ -50,7 +50,7 @@ class CryptoPPPEMConan(ConanFile):
             del self.options.fPIC
 
     def source(self):
-        suffix = "CRYPTOPP_{}".format(self.version.replace(".", "_"))
+        suffix = f'CRYPTOPP_{self.version.replace(".", "_")}'
 
         # Get sources
         tools.get(**self.conan_data["sources"][self.version]["source"],
@@ -58,12 +58,12 @@ class CryptoPPPEMConan(ConanFile):
 
         # Get CMakeLists
         tools.get(**self.conan_data["sources"][self.version]["cmake"])
-        src_folder = os.path.join(self.source_folder, "cryptopp-cmake-" + suffix)
+        src_folder = os.path.join(self.source_folder, f"cryptopp-cmake-{suffix}")
         dst_folder = os.path.join(self.source_folder, self._source_subfolder)
         shutil.move(os.path.join(src_folder, "CMakeLists.txt"), os.path.join(dst_folder, "CMakeLists.txt"))
         shutil.move(os.path.join(src_folder, "cryptopp-config.cmake"), os.path.join(dst_folder, "cryptopp-config.cmake"))
         tools.rmdir(src_folder)
-        
+
         # Get license
         tools.download("https://unlicense.org/UNLICENSE", "UNLICENSE", sha256="7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c")
 
@@ -95,7 +95,7 @@ class CryptoPPPEMConan(ConanFile):
         return self._cmake
 
     def requirements(self):
-        self.requires("cryptopp/" + self.version)
+        self.requires(f"cryptopp/{self.version}")
 
     def build(self):                      
         self._patch_sources()
@@ -118,19 +118,26 @@ class CryptoPPPEMConan(ConanFile):
 
     @staticmethod
     def _create_cmake_module_alias_targets(module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent("""\
+        content = "".join(
+            textwrap.dedent(
+                """\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """.format(alias=alias, aliased=aliased))
+            """.format(
+                    alias=alias, aliased=aliased
+                )
+            )
+            for alias, aliased in targets.items()
+        )
         tools.save(module_file, content)
 
     @property
     def _module_file_rel_path(self):
-        return os.path.join("lib", "cmake", "conan-official-{}-targets.cmake".format(self.name))
+        return os.path.join(
+            "lib", "cmake", f"conan-official-{self.name}-targets.cmake"
+        )
 
     def package_info(self):
         cmake_target = "cryptopp-pem-shared" if self.options.shared else "cryptopp-pem-static"

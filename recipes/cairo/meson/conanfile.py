@@ -110,9 +110,12 @@ class CairoConan(ConanFile):
             self.requires("libpng/1.6.39")
         if self.options.with_glib:
             self.requires("glib/2.75.2")
-        if self.settings.os == "Linux":
-            if self.options.with_xlib or self.options.with_xlib_xrender or self.options.with_xcb:
-                self.requires("xorg/system")
+        if self.settings.os == "Linux" and (
+            self.options.with_xlib
+            or self.options.with_xlib_xrender
+            or self.options.with_xcb
+        ):
+            self.requires("xorg/system")
         if self.options.get_safe("with_opengl") == "desktop":
             self.requires("opengl/system")
             if self.settings.os == "Windows":
@@ -158,7 +161,7 @@ class CairoConan(ConanFile):
         pkg_deps = PkgConfigDeps(self)
         pkg_deps.generate()
 
-        options = dict()
+        options = {}
         options["tests"] = "disabled"
         options["zlib"] = is_enabled(self.options.with_zlib)
         options["png"] = is_enabled(self.options.with_png)

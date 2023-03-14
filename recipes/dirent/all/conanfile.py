@@ -24,7 +24,7 @@ class DirEntConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        os.rename("dirent-{}".format(self.version), self._source_subfolder)
+        os.rename(f"dirent-{self.version}", self._source_subfolder)
 
     def package(self):
         self.copy(pattern="LICENSE", src=self._source_subfolder, dst="licenses")

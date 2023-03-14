@@ -73,11 +73,9 @@ class CassandraCppDriverConan(ConanFile):
             self.requires("boost/1.79.0")
 
     def validate(self):
-        if self.options.use_atomic == "boost":
-            # Compilation error on Linux
-            if self.settings.os == "Linux":
-                raise ConanInvalidConfiguration(
-                    "Boost.Atomic is not supported on Linux at the moment")
+        if self.options.use_atomic == "boost" and self.settings.os == "Linux":
+            raise ConanInvalidConfiguration(
+                "Boost.Atomic is not supported on Linux at the moment")
 
         if self.options.with_kerberos:
             raise ConanInvalidConfiguration(

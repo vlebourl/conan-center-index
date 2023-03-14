@@ -52,7 +52,9 @@ class CppfrontConan(ConanFile):
             raise ConanInvalidConfiguration(
                 f"{self.ref} requires C++{self._min_cppstd}, which your compiler does not support."
             )
-        if self.settings.compiler == "clang" and str(self.settings.compiler.version) in ("13", "14"):
+        if self.settings.compiler == "clang" and str(
+            self.settings.compiler.version
+        ) in {"13", "14"}:
             raise ConanInvalidConfiguration(
                 f"{self.ref} currently does not work with Clang {self.settings.compiler.version} on CCI, "
                 "it enters in an infinite build loop (smells like a compiler bug). Contributions are welcomed!"

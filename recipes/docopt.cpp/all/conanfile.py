@@ -81,7 +81,7 @@ class DocoptCppConan(ConanFile):
         # TODO: to remove in conan v2 once cmake_find_package_* generators removed
         self._create_cmake_module_alias_targets(
             os.path.join(self.package_folder, self._module_file_rel_path),
-            {self._cmake_target: "docopt::{}".format(self._cmake_target)}
+            {self._cmake_target: f"docopt::{self._cmake_target}"},
         )
 
     @property
@@ -89,19 +89,26 @@ class DocoptCppConan(ConanFile):
         return "docopt" if self.options.shared else "docopt_s"
 
     def _create_cmake_module_alias_targets(self, module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent("""\
+        content = "".join(
+            textwrap.dedent(
+                """\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """.format(alias=alias, aliased=aliased))
+            """.format(
+                    alias=alias, aliased=aliased
+                )
+            )
+            for alias, aliased in targets.items()
+        )
         save(self, module_file, content)
 
     @property
     def _module_file_rel_path(self):
-        return os.path.join("lib", "cmake", "conan-official-{}-targets.cmake".format(self.name))
+        return os.path.join(
+            "lib", "cmake", f"conan-official-{self.name}-targets.cmake"
+        )
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "docopt")

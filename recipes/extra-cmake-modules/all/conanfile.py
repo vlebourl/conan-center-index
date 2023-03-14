@@ -19,7 +19,7 @@ class ExtracmakemodulesConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        os.rename("extra-cmake-modules-{}".format(self.version), self._source_subfolder)
+        os.rename(f"extra-cmake-modules-{self.version}", self._source_subfolder)
 
     def _configure_cmake(self):
         if self._cmake:

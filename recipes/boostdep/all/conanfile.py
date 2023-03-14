@@ -31,7 +31,7 @@ class BoostDepConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version][0])
-        os.rename("boostdep-boost-{}".format(self.version), self._source_subfolder)
+        os.rename(f"boostdep-boost-{self.version}", self._source_subfolder)
         license_info = self.conan_data["sources"][self.version][1]
         tools.download(filename=os.path.basename(license_info["url"]), **license_info)
 
@@ -54,5 +54,5 @@ class BoostDepConan(ConanFile):
 
     def package_info(self):
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.output.info(f"Appending PATH environment variable: {bin_path}")
         self.deps_env_info.PATH.append(bin_path)

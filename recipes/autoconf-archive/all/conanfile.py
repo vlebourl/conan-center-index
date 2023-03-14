@@ -73,5 +73,7 @@ class AutoconfArchiveConan(ConanFile):
         aclocal_path = "/" + aclocal_path.replace("\\", "/").replace(":", "") # Can't use unix_path with Conan 2.0
         self.output.info(f'Appending ACLOCAL_PATH env: {aclocal_path}')
         self.env_info.ACLOCAL_PATH.append(aclocal_path)
-        self.output.info("Appending AUTOMAKE_CONAN_INCLUDES environment var: {}".format(aclocal_path))
+        self.output.info(
+            f"Appending AUTOMAKE_CONAN_INCLUDES environment var: {aclocal_path}"
+        )
         self.env_info.AUTOMAKE_CONAN_INCLUDES.append(aclocal_path)

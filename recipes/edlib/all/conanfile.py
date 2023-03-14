@@ -107,6 +107,5 @@ class EdlibConan(ConanFile):
         if not self.options.shared:
             if self.settings.os in ["Linux", "FreeBSD"]:
                 self.cpp_info.system_libs.append("m")
-            libcxx = stdcpp_library(self)
-            if libcxx:
+            if libcxx := stdcpp_library(self):
                 self.cpp_info.system_libs.append(libcxx)

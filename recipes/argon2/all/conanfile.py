@@ -78,17 +78,19 @@ class Argon2Conan(ConanFile):
             tc = MSBuildToolchain(self)
             tc.configuration = self._msbuild_configuration
             tc.properties["WholeProgramOptimization"] = "false"
-            tc.generate()
         else:
             env = VirtualBuildEnv(self)
             env.generate()
             tc = AutotoolsToolchain(self)
-            tc.make_args.extend([
-                "LIBRARY_REL=lib",
-                f"KERNEL_NAME={self._kernel_name}",
-                "RUN_EXT={}".format(".exe" if self.settings.os == "Windows" else ""),
-            ])
-            tc.generate()
+            tc.make_args.extend(
+                [
+                    "LIBRARY_REL=lib",
+                    f"KERNEL_NAME={self._kernel_name}",
+                    f'RUN_EXT={".exe" if self.settings.os == "Windows" else ""}',
+                ]
+            )
+
+        tc.generate()
 
     def build(self):
         apply_conandata_patches(self)

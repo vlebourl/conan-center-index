@@ -92,10 +92,10 @@ class CoinCbcConan(ConanFile):
         if self.settings.compiler == "Visual Studio":
             with tools.vcvars(self.settings):
                 env = {
-                    "CC": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                    "CXX": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                    "LD": "{} link -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                    "AR": "{} lib".format(tools.unix_path(self._user_info_build["automake"].ar_lib)),
+                    "CC": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
+                    "CXX": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
+                    "LD": f'{tools.unix_path(self._user_info_build["automake"].compile)} link -nologo',
+                    "AR": f'{tools.unix_path(self._user_info_build["automake"].ar_lib)} lib',
                 }
                 with tools.environment_append(env):
                     yield
@@ -109,8 +109,8 @@ class CoinCbcConan(ConanFile):
         self._autotools.libs = []
         yes_no = lambda v: "yes" if v else "no"
         configure_args = [
-            "--enable-shared={}".format(yes_no(self.options.shared)),
-            "--enable-cbc-parallel={}".format(yes_no(self.options.parallel)),
+            f"--enable-shared={yes_no(self.options.shared)}",
+            f"--enable-cbc-parallel={yes_no(self.options.parallel)}",
             "--without-blas",
             "--without-lapack",
         ]
@@ -120,8 +120,12 @@ class CoinCbcConan(ConanFile):
             if Version(self.settings.compiler.version) >= 12:
                 self._autotools.flags.append("-FS")
             if self.options.parallel:
-                configure_args.append("--with-pthreadsw32-lib={}".format(tools.unix_path(os.path.join(self.deps_cpp_info["pthreads4w"].lib_paths[0], self.deps_cpp_info["pthreads4w"].libs[0] + ".lib"))))
-                configure_args.append("--with-pthreadsw32-incdir={}".format(tools.unix_path(self.deps_cpp_info["pthreads4w"].include_paths[0])))
+                configure_args.append(
+                    f'--with-pthreadsw32-lib={tools.unix_path(os.path.join(self.deps_cpp_info["pthreads4w"].lib_paths[0], self.deps_cpp_info["pthreads4w"].libs[0] + ".lib"))}'
+                )
+                configure_args.append(
+                    f'--with-pthreadsw32-incdir={tools.unix_path(self.deps_cpp_info["pthreads4w"].include_paths[0])}'
+                )
         self._autotools.configure(configure_dir=os.path.join(self.source_folder, self._source_subfolder), args=configure_args)
         return self._autotools
 
@@ -168,5 +172,5 @@ class CoinCbcConan(ConanFile):
         self.cpp_info.components["osi-cbc"].names["pkg_config"] = "osi-cbc"
 
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.output.info(f"Appending PATH environment variable: {bin_path}")
         self.env_info.PATH.append(bin_path)

@@ -86,15 +86,19 @@ class CMinpackConan(ConanFile):
         minpack_include_dir = os.path.join("include", "cminpack-1")
         self.cpp_info.set_property("cmake_target_name", "cminpack")
         # the double precision version
-        self.cpp_info.components['cminpack-double'].libs = ['cminpack' + self._library_postfix()]
+        self.cpp_info.components['cminpack-double'].libs = [
+            f'cminpack{self._library_postfix()}'
+        ]
         self.cpp_info.components['cminpack-double'].includedirs.append(minpack_include_dir)
         self.cpp_info.components["cminpack-double"].set_property("cmake_target_name", "cminpack::cminpack")
         self.cpp_info.components["cminpack-double"].names["cmake_find_package"] = "cminpack"
         self.cpp_info.components["cminpack-double"].names["cmake_find_package_multi"] = "cminpack"
         self.cpp_info.components["cminpack-double"].names["pkg_config"] = "cminpack"
-        
+
         # the single precision version
-        self.cpp_info.components['cminpack-single'].libs = ['cminpacks' + self._library_postfix()]
+        self.cpp_info.components['cminpack-single'].libs = [
+            f'cminpacks{self._library_postfix()}'
+        ]
         self.cpp_info.components['cminpack-single'].includedirs.append(minpack_include_dir)
         self.cpp_info.components['cminpack-single'].defines.append("__cminpack_float__")
         self.cpp_info.components["cminpack-single"].set_property("cmake_target_name", "cminpack::cminpacks")

@@ -61,12 +61,12 @@ class Argtable2Conan(ConanFile):
     def generate(self):
         if is_msvc(self):
             tc = NMakeToolchain(self)
-            tc.generate()
         else:
             env = VirtualBuildEnv(self)
             env.generate()
             tc = AutotoolsToolchain(self)
-            tc.generate()
+
+        tc.generate()
 
     def build(self):
         apply_conandata_patches(self)

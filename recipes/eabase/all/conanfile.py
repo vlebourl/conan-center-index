@@ -18,7 +18,7 @@ class EABaseConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        folder_name = "EABase-{}".format(self.version)
+        folder_name = f"EABase-{self.version}"
         os.rename(folder_name, self._source_subfolder)
 
     def package_id(self):

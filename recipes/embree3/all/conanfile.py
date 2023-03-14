@@ -139,7 +139,9 @@ class EmbreeConan(ConanFile):
 
     def validate(self):
         if not (self._has_sse_avx or (self._embree_has_neon_support and self._has_neon)):
-            raise ConanInvalidConfiguration("Embree {} doesn't support {}".format(self.version, self.settings.arch))
+            raise ConanInvalidConfiguration(
+                f"Embree {self.version} doesn't support {self.settings.arch}"
+            )
 
         compiler_version = Version(self.info.settings.compiler.version)
         if self.info.settings.compiler == "clang" and compiler_version < "4":
@@ -239,14 +241,17 @@ class EmbreeConan(ConanFile):
         )
 
     def _create_cmake_module_alias_targets(self, module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent(f"""\
+        content = "".join(
+            textwrap.dedent(
+                f"""\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """)
+            """
+            )
+            for alias, aliased in targets.items()
+        )
         save(self, module_file, content)
 
     @property

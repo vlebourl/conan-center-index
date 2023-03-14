@@ -36,7 +36,7 @@ class FastDDSConan(ConanFile):
 
     @property
     def _is_msvc(self):
-        return str(self.settings.compiler) in ["Visual Studio", "msvc"]
+        return str(self.settings.compiler) in {"Visual Studio", "msvc"}
 
     @property
     def _minimum_cpp_standard(self):
@@ -79,15 +79,14 @@ class FastDDSConan(ConanFile):
         min_version = self._minimum_compilers_version.get(str(self.settings.compiler))
         if min_version and tools.Version(self.settings.compiler.version) < min_version:
             raise ConanInvalidConfiguration(
-                "{} requires C++{} support. {} {} does not support it.".format(
-                    self.name, self._minimum_cpp_standard,
-                    self.settings.compiler, self.settings.compiler.version
-                )
+                f"{self.name} requires C++{self._minimum_cpp_standard} support. {self.settings.compiler} {self.settings.compiler.version} does not support it."
             )
         if self.options.shared and self._is_msvc and "MT" in msvc_runtime_flag(self):
             # This combination leads to an fast-dds error when linking
             # linking dynamic '*.dll' and static MT runtime
-            raise ConanInvalidConfiguration("Mixing a dll {} library with a static runtime is a bad idea".format(self.name))
+            raise ConanInvalidConfiguration(
+                f"Mixing a dll {self.name} library with a static runtime is a bad idea"
+            )
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version], strip_root=True,
@@ -134,19 +133,26 @@ class FastDDSConan(ConanFile):
 
     @staticmethod
     def _create_cmake_module_alias_targets(module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent("""\
+        content = "".join(
+            textwrap.dedent(
+                """\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """.format(alias=alias, aliased=aliased))
+            """.format(
+                    alias=alias, aliased=aliased
+                )
+            )
+            for alias, aliased in targets.items()
+        )
         tools.save(module_file, content)
 
     @property
     def _module_file_rel_path(self):
-        return os.path.join("lib", "cmake", "conan-official-{}-targets.cmake".format(self.name))
+        return os.path.join(
+            "lib", "cmake", f"conan-official-{self.name}-targets.cmake"
+        )
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "fastdds")
@@ -177,7 +183,11 @@ class FastDDSConan(ConanFile):
         self.cpp_info.components["fast-discovery-server"].set_property("cmake_target_name", "fastdds::fast-discovery-server")
         self.cpp_info.components["fast-discovery-server"].bindirs = ["bin"]
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH env var for fast-dds::fast-discovery-server with: {}".format(bin_path)),
+        (
+            self.output.info(
+                f"Appending PATH env var for fast-dds::fast-discovery-server with: {bin_path}"
+            ),
+        )
         self.env_info.PATH.append(bin_path)
 
         # TODO: to remove in conan v2 once cmake_find_package_* generators removed

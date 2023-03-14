@@ -45,20 +45,25 @@ class CppIPCConan(ConanFile):
 
     def validate(self):
         if tools.is_apple_os(self.settings.os):
-            raise ConanInvalidConfiguration("{} does not support Apple platform".format(self.name))
+            raise ConanInvalidConfiguration(f"{self.name} does not support Apple platform")
 
         if self.settings.compiler.get_safe("cppstd"):
             tools.check_min_cppstd(self, 17)
 
-        minimum_version = self._compiler_required_cpp17.get(str(self.settings.compiler), False)
-        if minimum_version:
+        if minimum_version := self._compiler_required_cpp17.get(
+            str(self.settings.compiler), False
+        ):
             if tools.Version(self.settings.compiler.version) < minimum_version:
-                raise ConanInvalidConfiguration("{} requires C++17, which your compiler does not support.".format(self.name))
+                raise ConanInvalidConfiguration(
+                    f"{self.name} requires C++17, which your compiler does not support."
+                )
         else:
             self.output.warn("{0} requires C++17. Your compiler is unknown. Assuming it supports C++17.".format(self.name))
 
         if self.settings.compiler == "clang" and self.settings.compiler.get_safe("libcxx") == "libc++":
-            raise ConanInvalidConfiguration("{} doesn't support clang with libc++".format(self.name))
+            raise ConanInvalidConfiguration(
+                f"{self.name} doesn't support clang with libc++"
+            )
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],

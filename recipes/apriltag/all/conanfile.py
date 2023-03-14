@@ -46,7 +46,7 @@ class ApriltagConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = self.name + "-" + self.version
+        extracted_dir = f"{self.name}-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     def _configure_cmake(self):

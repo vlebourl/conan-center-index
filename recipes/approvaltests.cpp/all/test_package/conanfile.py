@@ -34,19 +34,19 @@ class TestPackageConan(ConanFile):
         self.run(bin_path, run_environment=True)
         if self._boost_test_supported() and self.options["approvaltests.cpp"].with_boosttest:
             print("Running Boost")
-            self.run(bin_path + "_boosttest", run_environment=True)
+            self.run(f"{bin_path}_boosttest", run_environment=True)
         if self.options["approvaltests.cpp"].with_catch2:
             print("Running Catch2")
-            self.run(bin_path + "_catch", run_environment=True)
+            self.run(f"{bin_path}_catch", run_environment=True)
         if self.options["approvaltests.cpp"].with_gtest:
             print("Running GTest")
-            self.run(bin_path + "_gtest", run_environment=True)
+            self.run(f"{bin_path}_gtest", run_environment=True)
         if self.options["approvaltests.cpp"].with_doctest:
             print("Running DocTest")
-            self.run(bin_path + "_doctest", run_environment=True)
+            self.run(f"{bin_path}_doctest", run_environment=True)
         if self._cpputest_supported() and self.options["approvaltests.cpp"].with_cpputest:
             print("Running CppUTest")
-            self.run(bin_path + "_cpputest", run_environment=True)
+            self.run(f"{bin_path}_cpputest", run_environment=True)
 
     def _boost_test_supported(self):
         return Version(self.deps_cpp_info["approvaltests.cpp"].version) >= "8.6.0"

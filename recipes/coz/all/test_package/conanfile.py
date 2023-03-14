@@ -15,5 +15,5 @@ class TestPackageConan(ConanFile):
         if tools.cross_building(self.settings):
             return
         bin_path = os.path.join("bin", "test_package")
-        self.run("coz run --- " + bin_path, run_environment=True)
+        self.run(f"coz run --- {bin_path}", run_environment=True)
         print(open("profile.coz").read())

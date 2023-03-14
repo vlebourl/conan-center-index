@@ -38,7 +38,7 @@ class EnkiTSConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = "enkiTS-" + self.version
+        extracted_dir = f"enkiTS-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     def _configure_cmake(self):

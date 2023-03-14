@@ -314,7 +314,7 @@ class AwsSdkCppConan(ConanFile):
 
     @property
     def _is_msvc(self):
-        return str(self.settings.compiler) in ["Visual Studio", "msvc"]
+        return str(self.settings.compiler) in {"Visual Studio", "msvc"}
 
     @property
     def _internal_requirements(self):
@@ -358,9 +358,10 @@ class AwsSdkCppConan(ConanFile):
         if self.settings.os != "Windows":
             self.requires("openssl/1.1.1n")
             self.requires("libcurl/7.80.0")
-        if self.settings.os in ["Linux", "FreeBSD"]:
-            if self.options.get_safe("text-to-speech"):
-                self.requires("pulseaudio/14.2")
+        if self.settings.os in ["Linux", "FreeBSD"] and self.options.get_safe(
+            "text-to-speech"
+        ):
+            self.requires("pulseaudio/14.2")
 
     def validate(self):
         if (self.options.shared
@@ -381,12 +382,11 @@ class AwsSdkCppConan(ConanFile):
         if self._use_aws_crt_cpp:
             if self._is_msvc and "MT" in msvc_runtime_flag(self):
                 raise ConanInvalidConfiguration("Static runtime is not working for more recent releases")
-        else:
-            if self.settings.os == "Macos" and self.settings.arch == "armv8":
-                raise ConanInvalidConfiguration(
-                    "This version doesn't support arm8. "
-                    "See https://github.com/aws/aws-sdk-cpp/issues/1542"
-                )
+        elif self.settings.os == "Macos" and self.settings.arch == "armv8":
+            raise ConanInvalidConfiguration(
+                "This version doesn't support arm8. "
+                "See https://github.com/aws/aws-sdk-cpp/issues/1542"
+            )
 
     def package_id(self):
         for hl_comp in self._internal_requirements.keys():
@@ -404,9 +404,7 @@ class AwsSdkCppConan(ConanFile):
         self._cmake = CMake(self)
 
         build_only = ["core"]
-        for sdk in self._sdks:
-            if self.options.get_safe(sdk):
-                build_only.append(sdk)
+        build_only.extend(sdk for sdk in self._sdks if self.options.get_safe(sdk))
         self._cmake.definitions["BUILD_ONLY"] = ";".join(build_only)
 
         self._cmake.definitions["ENABLE_UNITY_BUILD"] = True
@@ -500,17 +498,25 @@ class AwsSdkCppConan(ConanFile):
             # TODO: there is no way to properly emulate COMPONENTS names for
             #       find_package(AWSSDK COMPONENTS <sdk>) in set_property()
             #       right now: see https://github.com/conan-io/conan/issues/10258
-            self.cpp_info.components[sdk].set_property("cmake_target_name", "AWS::aws-sdk-cpp-{}".format(sdk))
-            self.cpp_info.components[sdk].set_property("pkg_config_name", "aws-sdk-cpp-{}".format(sdk))
+            self.cpp_info.components[sdk].set_property(
+                "cmake_target_name", f"AWS::aws-sdk-cpp-{sdk}"
+            )
+            self.cpp_info.components[sdk].set_property(
+                "pkg_config_name", f"aws-sdk-cpp-{sdk}"
+            )
             self.cpp_info.components[sdk].requires = ["core"]
             if sdk in self._internal_requirements:
                 self.cpp_info.components[sdk].requires.extend(self._internal_requirements[sdk])
-            self.cpp_info.components[sdk].libs = ["aws-cpp-sdk-" + sdk]
+            self.cpp_info.components[sdk].libs = [f"aws-cpp-sdk-{sdk}"]
 
             # TODO: to remove in conan v2 once cmake_find_package_* generators removed
-            self.cpp_info.components[sdk].names["cmake_find_package"] = "aws-sdk-cpp-" + sdk
-            self.cpp_info.components[sdk].names["cmake_find_package_multi"] = "aws-sdk-cpp-" + sdk
-            component_alias = "aws-sdk-cpp-{}_alias".format(sdk) # to emulate COMPONENTS names for find_package()
+            self.cpp_info.components[sdk].names[
+                "cmake_find_package"
+            ] = f"aws-sdk-cpp-{sdk}"
+            self.cpp_info.components[sdk].names[
+                "cmake_find_package_multi"
+            ] = f"aws-sdk-cpp-{sdk}"
+            component_alias = f"aws-sdk-cpp-{sdk}_alias"
             self.cpp_info.components[component_alias].names["cmake_find_package"] = sdk
             self.cpp_info.components[component_alias].names["cmake_find_package_multi"] = sdk
             self.cpp_info.components[component_alias].requires = [sdk]
@@ -530,12 +536,10 @@ class AwsSdkCppConan(ConanFile):
             if self.options.get_safe("text-to-speech"):
                 self.cpp_info.components["text-to-speech"].requires.append("pulseaudio::pulseaudio")
 
-        if self.settings.os == "Macos":
-            if self.options.get_safe("text-to-speech"):
-                self.cpp_info.components["text-to-speech"].frameworks.append("CoreAudio")
+        if self.settings.os == "Macos" and self.options.get_safe("text-to-speech"):
+            self.cpp_info.components["text-to-speech"].frameworks.append("CoreAudio")
 
-        lib_stdcpp = tools.stdcpp_library(self)
-        if lib_stdcpp:
+        if lib_stdcpp := tools.stdcpp_library(self):
             self.cpp_info.components["core"].system_libs.append(lib_stdcpp)
 
         # TODO: to remove in conan v2 once cmake_find_package_* generators removed

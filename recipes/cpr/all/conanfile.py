@@ -169,7 +169,12 @@ class CprConan(ConanFile):
                 else f"Invalid value of ssl option, {ssl_library}"
             )
 
-        if ssl_library not in (CprConan._AUTO_SSL, CprConan._NO_SSL, "winssl") and ssl_library != self.dependencies["libcurl"].options.with_ssl:
+        if ssl_library not in (
+            CprConan._AUTO_SSL,
+            CprConan._NO_SSL,
+            "winssl",
+            self.dependencies["libcurl"].options.with_ssl,
+        ):
             raise ConanInvalidConfiguration(
                 f"{self.ref}:with_ssl={self.options.with_ssl} requires libcurl:with_ssl={self.options.with_ssl}"
             )
@@ -189,25 +194,25 @@ class CprConan(ConanFile):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
 
     def _get_cmake_option(self, option):
-        CPR_1_6_CMAKE_OPTIONS_TO_OLD = {
-            "CPR_FORCE_USE_SYSTEM_CURL": "USE_SYSTEM_CURL",
-            "CPR_BUILD_TESTS": "BUILD_CPR_TESTS",
-            "CPR_BUILD_TESTS_SSL": "BUILD_CPR_TESTS_SSL",
-            "CPR_GENERATE_COVERAGE": "GENERATE_COVERAGE",
-            "CPR_USE_SYSTEM_GTEST": "USE_SYSTEM_GTEST",
-            "CPR_FORCE_OPENSSL_BACKEND": "USE_OPENSSL",
-            "CPR_FORCE_WINSSL_BACKEND": "USE_WINSSL",
-        }
-
         if self._uses_old_cmake_options:
+            CPR_1_6_CMAKE_OPTIONS_TO_OLD = {
+                "CPR_FORCE_USE_SYSTEM_CURL": "USE_SYSTEM_CURL",
+                "CPR_BUILD_TESTS": "BUILD_CPR_TESTS",
+                "CPR_BUILD_TESTS_SSL": "BUILD_CPR_TESTS_SSL",
+                "CPR_GENERATE_COVERAGE": "GENERATE_COVERAGE",
+                "CPR_USE_SYSTEM_GTEST": "USE_SYSTEM_GTEST",
+                "CPR_FORCE_OPENSSL_BACKEND": "USE_OPENSSL",
+                "CPR_FORCE_WINSSL_BACKEND": "USE_WINSSL",
+            }
+
             # Get the translated option if we can, or the original if one isn't defined.
             return CPR_1_6_CMAKE_OPTIONS_TO_OLD.get(option, option)
 
-        CPR_1_6_CMAKE_OPTIONS_TO_1_10 = {
-            "CPR_FORCE_USE_SYSTEM_CURL": "CPR_USE_SYSTEM_CURL"
-        }
-
         if Version(self.version) >= "1.10.0":
+            CPR_1_6_CMAKE_OPTIONS_TO_1_10 = {
+                "CPR_FORCE_USE_SYSTEM_CURL": "CPR_USE_SYSTEM_CURL"
+            }
+
             return CPR_1_6_CMAKE_OPTIONS_TO_1_10.get(option, option)
         return option
 

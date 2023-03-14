@@ -144,9 +144,11 @@ class BitserializerConan(ConanFile):
         self.cpp_info.components["bitserializer-core"].set_property("cmake_target_name", "BitSerializer::core")
         self.cpp_info.components["bitserializer-core"].bindirs = []
         self.cpp_info.components["bitserializer-core"].libdirs = []
-        if self.settings.compiler == "gcc" or (self.settings.os == "Linux" and self.settings.compiler == "clang"):
-            if Version(self.settings.compiler.version) < 9:
-                self.cpp_info.components["bitserializer-core"].system_libs = ["stdc++fs"]
+        if (
+            self.settings.compiler == "gcc"
+            or (self.settings.os == "Linux" and self.settings.compiler == "clang")
+        ) and Version(self.settings.compiler.version) < 9:
+            self.cpp_info.components["bitserializer-core"].system_libs = ["stdc++fs"]
 
         # cpprestjson-archive
         if self.options.with_cpprestsdk:

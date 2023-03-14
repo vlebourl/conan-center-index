@@ -88,7 +88,6 @@ class AprConan(ConanFile):
             tc = CMakeToolchain(self)
             tc.variables["INSTALL_PDB"] = False
             tc.variables["APR_BUILD_TESTAPR"] = False
-            tc.generate()
         else:
             env = VirtualBuildEnv(self)
             env.generate()
@@ -96,7 +95,8 @@ class AprConan(ConanFile):
             tc.configure_args.append("--with-installbuilddir=${prefix}/res/build-1")
             if cross_building(self):
                 tc.configure_args.append("apr_cv_mutex_robust_shared=yes")
-            tc.generate()
+
+        tc.generate()
 
     def _patch_sources(self):
         apply_conandata_patches(self)

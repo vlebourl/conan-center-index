@@ -31,17 +31,17 @@ class FakeItConan(ConanFile):
             self.requires("gtest/1.11.0")
         elif self.options.integration == "qtest":
             self.requires("qt/6.3.0")
-        elif self.options.integration == "standalone":
-            pass
-        else:
-            raise ConanInvalidConfiguration("%s is not (yet) available on cci" % self.options.integration)
+        elif self.options.integration != "standalone":
+            raise ConanInvalidConfiguration(
+                f"{self.options.integration} is not (yet) available on cci"
+            )
 
     def package_id(self):
         self.info.header_only()
 
     def validate(self):
-        minimal_cpp_standard = "11"
         if self.settings.compiler.get_safe("cppstd"):
+            minimal_cpp_standard = "11"
             tools.check_min_cppstd(self, minimal_cpp_standard)
 
     def source(self):

@@ -66,7 +66,7 @@ class ApprovalTestsCppConan(ConanFile):
             filename = url[url.rfind("/") + 1:]
             tools.download(url, filename)
             tools.check_sha256(filename, source["sha256"])
-        rename(self, "ApprovalTests.v.{}.hpp".format(self.version), self._header_file)
+        rename(self, f"ApprovalTests.v.{self.version}.hpp", self._header_file)
 
     def package(self):
         self.copy(self._header_file, dst="include")
@@ -92,5 +92,5 @@ class ApprovalTestsCppConan(ConanFile):
     def _require_at_least_compiler_version(self, compiler, compiler_version):
         if self.settings.compiler == compiler and tools.Version(self.settings.compiler.version) < compiler_version:
             raise ConanInvalidConfiguration(
-                "{}/{} with compiler {} requires at least compiler version {}".
-                    format(self.name, self.version, compiler, compiler_version))
+                f"{self.name}/{self.version} with compiler {compiler} requires at least compiler version {compiler_version}"
+            )

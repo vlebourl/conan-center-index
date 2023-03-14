@@ -72,14 +72,18 @@ class AtSpi2CoreConan(ConanFile):
         if self._meson:
             return self._meson
         self._meson = Meson(self)
-        defs = {}
-        defs["introspection"] = "no"
-        defs["docs"] = "false"
-        defs["x11"] = "yes" if self.options.with_x11 else "no"
-        args=[]
-        args.append("--datadir=%s" % os.path.join(self.package_folder, "res"))
-        args.append("--localedir=%s" % os.path.join(self.package_folder, "res"))
-        args.append("--wrap-mode=nofallback")
+        defs = {
+            "introspection": "no",
+            "docs": "false",
+            "x11": "yes" if self.options.with_x11 else "no",
+        }
+        args = [f'--datadir={os.path.join(self.package_folder, "res")}']
+        args.extend(
+            (
+                f'--localedir={os.path.join(self.package_folder, "res")}',
+                "--wrap-mode=nofallback",
+            )
+        )
         self._meson.configure(defs=defs, build_folder=self._build_subfolder, source_folder=self._source_subfolder, pkg_config_paths=".", args=args)
         return self._meson
 

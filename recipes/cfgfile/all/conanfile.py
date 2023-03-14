@@ -88,5 +88,5 @@ class CfgfileConan(ConanFile):
         self.cpp_info.set_property("cmake_target_name", "cfgfile::cfgfile")
         self.cpp_info.includedirs.append(os.path.join("include", "cfgfile"))
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH env var with : {}".format(bin_path))
+        self.output.info(f"Appending PATH env var with : {bin_path}")
         self.env_info.PATH.append(bin_path)

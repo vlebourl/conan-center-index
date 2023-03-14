@@ -82,7 +82,7 @@ def main():
                 type = parsed["patches"][version][i]["patch_type"]
                 if (
                     type in ["official", "bugfix", "vulnerability"]
-                    and not "patch_source" in patch
+                    and "patch_source" not in patch
                 ):
                     print(
                         f"::warning file={args.path},line={type.start_line},endline={type.end_line},"

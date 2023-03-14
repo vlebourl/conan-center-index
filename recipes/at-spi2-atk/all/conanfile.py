@@ -72,8 +72,7 @@ class AtSPI2AtkConan(ConanFile):
         if self._meson:
             return self._meson
         self._meson = Meson(self)
-        args=[]
-        args.append('--wrap-mode=nofallback')
+        args = ['--wrap-mode=nofallback']
         self._meson.configure(build_folder=self._build_subfolder, source_folder=self._source_subfolder, pkg_config_paths='.', args=args)
         return self._meson
 

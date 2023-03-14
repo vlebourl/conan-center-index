@@ -13,7 +13,7 @@ class TestPackageV1Conan(ConanFile):
     def build(self):
         shutil.copy2(src=os.path.join(self.source_folder, os.pardir, "test_package", "pure2-hello.cpp2"),
                      dst=os.path.join(self.build_folder, "pure2-hello.cpp2"))
-        self.run("cppfront {}".format(os.path.join(self.build_folder, "pure2-hello.cpp2")))
+        self.run(f'cppfront {os.path.join(self.build_folder, "pure2-hello.cpp2")}')
 
     def test(self):
         self.run("cppfront -h")

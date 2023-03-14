@@ -58,10 +58,10 @@ class DiligentFxConan(ConanFile):
         apply_conandata_patches(self)
 
     def requirements(self):
-        if self.version == "cci.20220219" or self.version == "cci.20211112":
+        if self.version in ["cci.20220219", "cci.20211112"]:
             self.requires("diligent-tools/2.5.2")
         else:
-            self.requires("diligent-tools/{}".format(self.version))
+            self.requires(f"diligent-tools/{self.version}")
 
     @property
     def _diligent_platform(self):

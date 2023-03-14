@@ -101,7 +101,6 @@ class FaacConan(ConanFile):
         if is_msvc(self):
             tc = MSBuildToolchain(self)
             tc.configuration = self._msbuild_configuration
-            tc.generate()
         else:
             VirtualBuildEnv(self).generate()
             tc = AutotoolsToolchain(self)
@@ -109,7 +108,8 @@ class FaacConan(ConanFile):
             tc.configure_args.append(f"--enable-drm={yes_no(self.options.drm)}")
             if self._has_mp4_option:
                 tc.configure_args.append(f"--with-mp4v2={yes_no(self.options.with_mp4)}")
-            tc.generate()
+
+        tc.generate()
 
     def build(self):
         apply_conandata_patches(self)

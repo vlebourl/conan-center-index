@@ -38,16 +38,20 @@ class AGSConan(ConanFile):
 
     def configure(self):
         if self.settings.os != "Windows":
-            raise ConanInvalidConfiguration("ags doesn't support OS: {}.".format(self.settings.os))
+            raise ConanInvalidConfiguration(f"ags doesn't support OS: {self.settings.os}.")
         if self.settings.compiler != "Visual Studio":
-            raise ConanInvalidConfiguration("ags doesn't support compiler: {} on OS: {}.".
-                                            format(self.settings.compiler, self.settings.os))
+            raise ConanInvalidConfiguration(
+                f"ags doesn't support compiler: {self.settings.compiler} on OS: {self.settings.os}."
+            )
 
-        if self.settings.compiler == "Visual Studio":
-            if self.settings.compiler.version not in self._supported_msvc_versions:
-                raise ConanInvalidConfiguration("ags doesn't support MSVC version: {}".format(self.settings.compiler.version))
-            if self.settings.arch not in self._supported_archs:
-                raise ConanInvalidConfiguration("ags doesn't support arch: {}".format(self.settings.arch))
+        if self.settings.compiler.version not in self._supported_msvc_versions:
+            raise ConanInvalidConfiguration(
+                f"ags doesn't support MSVC version: {self.settings.compiler.version}"
+            )
+        if self.settings.arch not in self._supported_archs:
+            raise ConanInvalidConfiguration(
+                f"ags doesn't support arch: {self.settings.arch}"
+            )
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],

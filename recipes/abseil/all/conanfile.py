@@ -150,7 +150,7 @@ class AbseilConan(ConanFile):
 
             cmake_imported_target_name = cmake_function_args[0]
             cmake_target_nonamespace = cmake_imported_target_name.replace("absl::", "")
-            potential_lib_name = "absl_" + cmake_target_nonamespace
+            potential_lib_name = f"absl_{cmake_target_nonamespace}"
 
             components.setdefault(potential_lib_name, {"cmake_target": cmake_target_nonamespace})
 
@@ -162,32 +162,31 @@ class AbseilConan(ConanFile):
                 target_properties = re.findall(r"(?P<property>INTERFACE_COMPILE_DEFINITIONS|INTERFACE_INCLUDE_DIRECTORIES|INTERFACE_LINK_LIBRARIES)[\n|\s]+(?P<values>.+)", cmake_function_args[2])
                 for target_property in target_properties:
                     property_type = target_property[0]
-                    if property_type == "INTERFACE_LINK_LIBRARIES":
-                        values_list = target_property[1].replace('"', "").split(";")
-                        for dependency in values_list:
-                            if dependency.startswith("absl::"): # abseil targets
-                                components[potential_lib_name].setdefault("requires", []).append(dependency.replace("absl::", "absl_"))
-                            else: # system libs or frameworks
-                                if self.settings.os in ["Linux", "FreeBSD"]:
-                                    if dependency == "Threads::Threads":
-                                        components[potential_lib_name].setdefault("system_libs", []).append("pthread")
-                                    elif "-lm" in dependency:
-                                        components[potential_lib_name].setdefault("system_libs", []).append("m")
-                                    elif "-lrt" in dependency:
-                                        components[potential_lib_name].setdefault("system_libs", []).append("rt")
-                                elif self.settings.os == "Windows":
-                                    for system_lib in ["bcrypt", "advapi32", "dbghelp"]:
-                                        if system_lib in dependency:
-                                            components[potential_lib_name].setdefault("system_libs", []).append(system_lib)
-                                elif is_apple_os(self):
-                                    for framework in ["CoreFoundation"]:
-                                        if framework in dependency:
-                                            components[potential_lib_name].setdefault("frameworks", []).append(framework)
-                    elif property_type == "INTERFACE_COMPILE_DEFINITIONS":
+                    if property_type == "INTERFACE_COMPILE_DEFINITIONS":
                         values_list = target_property[1].replace('"', "").split(";")
                         for definition in values_list:
                             components[potential_lib_name].setdefault("defines", []).append(definition)
 
+                    elif property_type == "INTERFACE_LINK_LIBRARIES":
+                        values_list = target_property[1].replace('"', "").split(";")
+                        for dependency in values_list:
+                            if dependency.startswith("absl::"): # abseil targets
+                                components[potential_lib_name].setdefault("requires", []).append(dependency.replace("absl::", "absl_"))
+                            elif self.settings.os in ["Linux", "FreeBSD"]:
+                                if dependency == "Threads::Threads":
+                                    components[potential_lib_name].setdefault("system_libs", []).append("pthread")
+                                elif "-lm" in dependency:
+                                    components[potential_lib_name].setdefault("system_libs", []).append("m")
+                                elif "-lrt" in dependency:
+                                    components[potential_lib_name].setdefault("system_libs", []).append("rt")
+                            elif self.settings.os == "Windows":
+                                for system_lib in ["bcrypt", "advapi32", "dbghelp"]:
+                                    if system_lib in dependency:
+                                        components[potential_lib_name].setdefault("system_libs", []).append(system_lib)
+                            elif is_apple_os(self):
+                                for framework in ["CoreFoundation"]:
+                                    if framework in dependency:
+                                        components[potential_lib_name].setdefault("frameworks", []).append(framework)
         return components
 
     def _create_components_file(self, output_file, components):
@@ -217,7 +216,9 @@ class AbseilConan(ConanFile):
         abseil_components = json.loads(components_json_file)
         for pkgconfig_name, values in abseil_components.items():
             cmake_target = values["cmake_target"]
-            self.cpp_info.components[pkgconfig_name].set_property("cmake_target_name", "absl::{}".format(cmake_target))
+            self.cpp_info.components[pkgconfig_name].set_property(
+                "cmake_target_name", f"absl::{cmake_target}"
+            )
             self.cpp_info.components[pkgconfig_name].set_property("pkg_config_name", pkgconfig_name)
             self.cpp_info.components[pkgconfig_name].libs = values.get("libs", [])
             self.cpp_info.components[pkgconfig_name].defines = values.get("defines", [])
@@ -255,9 +256,12 @@ class _ABIFile:
 
     def replace_in_options_file(self, options_filepath):
         for name, value in self.abi.items():
-            replace_in_file(self.conanfile, options_filepath,
-                    "#define ABSL_OPTION_{} 2".format(name),
-                    "#define ABSL_OPTION_{} {}".format(name, value))
+            replace_in_file(
+                self.conanfile,
+                options_filepath,
+                f"#define ABSL_OPTION_{name} 2",
+                f"#define ABSL_OPTION_{name} {value}",
+            )
 
     def cxx_std(self):
-        return 17 if any([v == "1" for k, v in self.abi.items()]) else 11
+        return 17 if any(v == "1" for k, v in self.abi.items()) else 11

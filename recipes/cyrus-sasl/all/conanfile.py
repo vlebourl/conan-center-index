@@ -116,26 +116,26 @@ class CyrusSaslConan(ConanFile):
         tc = AutotoolsToolchain(self)
         yes_no = lambda v: "yes" if v else "no"
         rootpath_no = lambda v, req: unix_path(self, self.dependencies[req].package_folder) if v else "no"
-        tc.configure_args.extend([
-            "--disable-sample",
-            "--disable-macos-framework",
-            "--with-dblib=none",
-            "--with-openssl={}".format(yes_no(self.options.with_openssl)),
-            "--enable-digest={}".format(yes_no(self.options.with_digest)),
-            "--enable-scram={}".format(yes_no(self.options.with_scram)),
-            "--enable-otp={}".format(yes_no(self.options.with_otp)),
-            "--enable-krb4={}".format(yes_no(self.options.with_krb4)),
-            "--enable-gssapi={}".format(yes_no(self.options.with_gssapi)),
-            "--enable-plain={}".format(yes_no(self.options.with_plain)),
-            "--enable-anon={}".format(yes_no(self.options.with_anon)),
-            "--enable-sql={}".format(
-                yes_no(self.options.with_postgresql or self.options.with_mysql or self.options.with_sqlite3),
-            ),
-            "--with-pgsql={}".format(rootpath_no(self.options.with_postgresql, "libpq")),
-            "--with-mysql={}".format(rootpath_no(self.options.with_mysql, "libmysqlclient")),
-            "--without-sqlite",
-            "--with-sqlite3={}".format(rootpath_no(self.options.with_sqlite3, "sqlite3")),
-        ])
+        tc.configure_args.extend(
+            [
+                "--disable-sample",
+                "--disable-macos-framework",
+                "--with-dblib=none",
+                f"--with-openssl={yes_no(self.options.with_openssl)}",
+                f"--enable-digest={yes_no(self.options.with_digest)}",
+                f"--enable-scram={yes_no(self.options.with_scram)}",
+                f"--enable-otp={yes_no(self.options.with_otp)}",
+                f"--enable-krb4={yes_no(self.options.with_krb4)}",
+                f"--enable-gssapi={yes_no(self.options.with_gssapi)}",
+                f"--enable-plain={yes_no(self.options.with_plain)}",
+                f"--enable-anon={yes_no(self.options.with_anon)}",
+                f"--enable-sql={yes_no(self.options.with_postgresql or self.options.with_mysql or self.options.with_sqlite3)}",
+                f'--with-pgsql={rootpath_no(self.options.with_postgresql, "libpq")}',
+                f'--with-mysql={rootpath_no(self.options.with_mysql, "libmysqlclient")}',
+                "--without-sqlite",
+                f'--with-sqlite3={rootpath_no(self.options.with_sqlite3, "sqlite3")}',
+            ]
+        )
         if self.options.with_gssapi:
             tc.configure_args.append("--with-gss_impl=mit")
         tc.generate()

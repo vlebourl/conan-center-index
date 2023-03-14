@@ -81,7 +81,7 @@ class DrflacConan(ConanFile):
         if self.options.shared:
             self.cpp_info.defines.append("DRFLAC_DLL")
         if self.options.buffer_size != "0":
-            self.cpp_info.defines.append("DR_FLAC_BUFFER_SIZE={}".format(self.options.buffer_size))
+            self.cpp_info.defines.append(f"DR_FLAC_BUFFER_SIZE={self.options.buffer_size}")
         if self.options.no_crc:
             self.cpp_info.defines.append("DR_FLAC_NO_CRC")
         if self.options.no_ogg:

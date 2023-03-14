@@ -59,18 +59,11 @@ class AutoconfConan(ConanFile):
             "--datarootdir=${prefix}/res",
         ])
 
-        if self.settings.os == "Windows":
-            if is_msvc(self):
-                build = "{}-{}-{}".format(
-                    "x86_64" if self._settings_build.arch == "x86_64" else "i686",
-                    "pc" if self._settings_build.arch == "x86" else "win64",
-                    "mingw32")
-                host = "{}-{}-{}".format(
-                    "x86_64" if self.settings.arch == "x86_64" else "i686",
-                    "pc" if self.settings.arch == "x86" else "win64",
-                    "mingw32")
-                tc.configure_args.append(f"--build={build}")
-                tc.configure_args.append(f"--host={host}")
+        if self.settings.os == "Windows" and is_msvc(self):
+            build = f'{"x86_64" if self._settings_build.arch == "x86_64" else "i686"}-{"pc" if self._settings_build.arch == "x86" else "win64"}-mingw32'
+            host = f'{"x86_64" if self.settings.arch == "x86_64" else "i686"}-{"pc" if self.settings.arch == "x86" else "win64"}-mingw32'
+            tc.configure_args.append(f"--build={build}")
+            tc.configure_args.append(f"--host={host}")
 
         env = tc.environment()
         env.define_path("INSTALL", unix_path(self, os.path.join(self.source_folder, "build-aux", "install-sh")))

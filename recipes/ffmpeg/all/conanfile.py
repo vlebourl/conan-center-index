@@ -189,7 +189,7 @@ class FFMpegConan(ConanFile):
 
     @property
     def _is_msvc(self):
-        return str(self.settings.compiler) in ["Visual Studio", "msvc"]
+        return str(self.settings.compiler) in {"Visual Studio", "msvc"}
 
     @property
     def _settings_build(self):
@@ -227,7 +227,7 @@ class FFMpegConan(ConanFile):
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
-        if not self.settings.os in ["Linux", "FreeBSD"]:
+        if self.settings.os not in ["Linux", "FreeBSD"]:
             del self.options.with_vaapi
             del self.options.with_vdpau
             del self.options.with_vulkan
@@ -313,8 +313,9 @@ class FFMpegConan(ConanFile):
             for feature in features:
                 used = used or self.options.get_safe(feature)
             if not used:
-                raise ConanInvalidConfiguration("FFmpeg '{}' option requires '{}' option to be enabled".format(
-                    dependency, "' or '".join(features)))
+                raise ConanInvalidConfiguration(
+                    f"""FFmpeg '{dependency}' option requires '{"' or '".join(features)}' option to be enabled"""
+                )
 
     def build_requirements(self):
         if self.settings.arch in ("x86", "x86_64"):
@@ -334,25 +335,23 @@ class FFMpegConan(ConanFile):
             str(self.settings.arch),
             str(self.settings.compiler) if self.settings.os == "Windows" else None,
         )
-        target_arch = triplet.split("-")[0]
-        return target_arch
+        return triplet.split("-")[0]
 
     @property
     def _target_os(self):
         if self._is_msvc:
             return "win32"
-        else:
-            triplet = tools.get_gnu_triplet(
-                "Macos" if is_apple_os(self) else str(self.settings.os),
-                str(self.settings.arch),
-                str(self.settings.compiler) if self.settings.os == "Windows" else None,
-            )
-            target_os = triplet.split("-")[2]
-            if target_os in ["gnueabihf", "gnueabi"]:
-                target_os = "gnu" # could also be "linux"
-            if target_os.startswith("android"):
-                target_os = "android"
-            return target_os
+        triplet = tools.get_gnu_triplet(
+            "Macos" if is_apple_os(self) else str(self.settings.os),
+            str(self.settings.arch),
+            str(self.settings.compiler) if self.settings.os == "Windows" else None,
+        )
+        target_os = triplet.split("-")[2]
+        if target_os in ["gnueabihf", "gnueabi"]:
+            target_os = "gnu" # could also be "linux"
+        if target_os.startswith("android"):
+            target_os = "android"
+        return target_os
 
     def _patch_sources(self):
         if self._is_msvc and self.options.with_libx264 and not self.options["libx264"].shared and Version(self.version) <= "5.0":
@@ -364,10 +363,13 @@ class FFMpegConan(ConanFile):
         if self.options.with_ssl == "openssl":
             # https://trac.ffmpeg.org/ticket/5675
             openssl_libraries = " ".join(
-                ["-l%s" % lib for lib in self.deps_cpp_info["openssl"].libs])
-            tools.replace_in_file(os.path.join(self._source_subfolder, "configure"),
-                                  "check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto -lws2_32 -lgdi32 ||",
-                                  "check_lib openssl openssl/ssl.h OPENSSL_init_ssl %s || " % openssl_libraries)
+                [f"-l{lib}" for lib in self.deps_cpp_info["openssl"].libs]
+            )
+            tools.replace_in_file(
+                os.path.join(self._source_subfolder, "configure"),
+                "check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto -lws2_32 -lgdi32 ||",
+                f"check_lib openssl openssl/ssl.h OPENSSL_init_ssl {openssl_libraries} || ",
+            )
 
     @contextlib.contextmanager
     def _build_context(self):
@@ -633,19 +635,18 @@ class FFMpegConan(ConanFile):
                 # ffmpeg produces `.a` files that are actually `.lib` files
                 with tools.chdir(os.path.join(self.package_folder, "lib")):
                     for lib in glob.glob("*.a"):
-                        rename(self, lib, lib[3:-2] + ".lib")
+                        rename(self, lib, f"{lib[3:-2]}.lib")
 
     def _read_component_version(self, component_name):
-        version_file_name = os.path.join(self.package_folder,
-                                         "include", "lib%s" % component_name,
-                                         "version.h")
+        version_file_name = os.path.join(
+            self.package_folder, "include", f"lib{component_name}", "version.h"
+        )
         version_file = open(version_file_name, "r")
         pattern = "define LIB%s_VERSION_(MAJOR|MINOR|MICRO)[ \t]+(\\d+)" % (
                   component_name.upper())
-        version = dict()
+        version = {}
         for line in version_file:
-            match = re.search(pattern, line)
-            if match:
+            if match := re.search(pattern, line):
                 version[match[1]] = match[2]
         if "MAJOR" in version and "MINOR" in version and "MICRO" in version:
             return f"{version['MAJOR']}.{version['MINOR']}.{version['MICRO']}"
@@ -660,10 +661,9 @@ class FFMpegConan(ConanFile):
                              "lib%s packaged with ffmpeg!" % component_name)
 
     def package_info(self):
-        if self.options.with_programs:
-            if self.options.with_sdl:
-                self.cpp_info.components["programs"].requires = [
-                    "sdl::libsdl2"]
+        if self.options.with_programs and self.options.with_sdl:
+            self.cpp_info.components["programs"].requires = [
+                "sdl::libsdl2"]
 
         if self.options.avdevice:
             self.cpp_info.components["avdevice"].set_property(
@@ -765,15 +765,17 @@ class FFMpegConan(ConanFile):
                 self.cpp_info.components["swscale"].system_libs = ["m"]
             if self.options.postproc:
                 self.cpp_info.components["postproc"].system_libs = ["m"]
-            if self.options.get_safe("fPIC"):
-                if self.settings.compiler in ("gcc", "clang"):
-                    # https://trac.ffmpeg.org/ticket/1713
-                    # https://ffmpeg.org/platform.html#Advanced-linking-configuration
-                    # https://ffmpeg.org/pipermail/libav-user/2014-December/007719.html
-                    self.cpp_info.components["avcodec"].exelinkflags.append(
-                        "-Wl,-Bsymbolic")
-                    self.cpp_info.components["avcodec"].sharedlinkflags.append(
-                        "-Wl,-Bsymbolic")
+            if self.options.get_safe("fPIC") and self.settings.compiler in (
+                "gcc",
+                "clang",
+            ):
+                # https://trac.ffmpeg.org/ticket/1713
+                # https://ffmpeg.org/platform.html#Advanced-linking-configuration
+                # https://ffmpeg.org/pipermail/libav-user/2014-December/007719.html
+                self.cpp_info.components["avcodec"].exelinkflags.append(
+                    "-Wl,-Bsymbolic")
+                self.cpp_info.components["avcodec"].sharedlinkflags.append(
+                    "-Wl,-Bsymbolic")
             if self.options.avformat:
                 self.cpp_info.components["avformat"].system_libs = ["m"]
             if self.options.avfilter:

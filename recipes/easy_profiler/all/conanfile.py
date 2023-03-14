@@ -45,10 +45,9 @@ class EasyProfilerConan(ConanFile):
 
     def validate(self):
         if self.settings.compiler == "Visual Studio" and self.settings.compiler.runtime == "MTd" and \
-           self.options.shared and tools.Version(self.settings.compiler.version) >= "15":
+               self.options.shared and tools.Version(self.settings.compiler.version) >= "15":
             raise ConanInvalidConfiguration(
-                "{} {} with MTd runtime not supported".format(self.settings.compiler,
-                                                              self.settings.compiler.version)
+                f"{self.settings.compiler} {self.settings.compiler.version} with MTd runtime not supported"
             )
 
     def source(self):
@@ -82,8 +81,9 @@ class EasyProfilerConan(ConanFile):
         os.remove(os.path.join(self.package_folder, "LICENSE.APACHE"))
         if self.settings.os == "Windows":
             for dll_prefix in ["concrt", "msvcp", "vcruntime"]:
-                tools.remove_files_by_mask(os.path.join(self.package_folder, "bin"),
-                                           "{}*.dll".format(dll_prefix))
+                tools.remove_files_by_mask(
+                    os.path.join(self.package_folder, "bin"), f"{dll_prefix}*.dll"
+                )
         self._create_cmake_module_alias_targets(
             os.path.join(self.package_folder, self._module_file_rel_path),
             {"easy_profiler": "easy_profiler::easy_profiler"}
@@ -91,14 +91,19 @@ class EasyProfilerConan(ConanFile):
 
     @staticmethod
     def _create_cmake_module_alias_targets(module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent("""\
+        content = "".join(
+            textwrap.dedent(
+                """\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """.format(alias=alias, aliased=aliased))
+            """.format(
+                    alias=alias, aliased=aliased
+                )
+            )
+            for alias, aliased in targets.items()
+        )
         tools.save(module_file, content)
 
     @property
@@ -107,8 +112,9 @@ class EasyProfilerConan(ConanFile):
 
     @property
     def _module_file_rel_path(self):
-        return os.path.join(self._module_subfolder,
-                            "conan-official-{}-targets.cmake".format(self.name))
+        return os.path.join(
+            self._module_subfolder, f"conan-official-{self.name}-targets.cmake"
+        )
 
     def package_info(self):
         self.cpp_info.names["cmake_find_package"] = "easy_profiler"
@@ -125,5 +131,5 @@ class EasyProfilerConan(ConanFile):
                 self.cpp_info.defines.append("EASY_PROFILER_STATIC")
 
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.output.info(f"Appending PATH environment variable: {bin_path}")
         self.env_info.PATH.append(bin_path)

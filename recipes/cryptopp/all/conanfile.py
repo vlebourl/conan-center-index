@@ -114,10 +114,7 @@ class CryptoPPConan(ConanFile):
         apply_conandata_patches(self)
         # Use cpu-features.h from Android NDK
         if self.settings.os == "Android" and Version(self.version) < "8.4.0":
-            # Replicate logic from: https://github.com/weidai11/cryptopp/blob/CRYPTOPP_8_2_0/cpu.cpp#L46-L52
-            # In more recent versions this is already taken care of by cryptopp-cmake
-            android_ndk_home = self.conf.get("tools.android:ndk_path")
-            if android_ndk_home:
+            if android_ndk_home := self.conf.get("tools.android:ndk_path"):
                 copy(
                     self,
                     "cpu-features.h",
@@ -159,14 +156,17 @@ class CryptoPPConan(ConanFile):
         )
 
     def _create_cmake_module_alias_targets(self, module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent(f"""\
+        content = "".join(
+            textwrap.dedent(
+                f"""\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """)
+            """
+            )
+            for alias, aliased in targets.items()
+        )
         save(self, module_file, content)
 
     @property

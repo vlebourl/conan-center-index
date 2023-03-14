@@ -53,7 +53,9 @@ class SpirvtoolsConan(ConanFile):
     def requirements(self):
         if not self._get_compatible_spirv_headers_version:
             raise ConanInvalidConfiguration("unknown diligentgraphics-spirv-headers version")
-        self.requires("diligentgraphics-spirv-headers/{}".format(self._get_compatible_spirv_headers_version))
+        self.requires(
+            f"diligentgraphics-spirv-headers/{self._get_compatible_spirv_headers_version}"
+        )
 
     @property
     def _get_compatible_spirv_headers_version(self):
@@ -150,14 +152,19 @@ class SpirvtoolsConan(ConanFile):
 
     @staticmethod
     def _create_cmake_module_alias_targets(module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent("""\
+        content = "".join(
+            textwrap.dedent(
+                """\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """.format(alias=alias, aliased=aliased))
+            """.format(
+                    alias=alias, aliased=aliased
+                )
+            )
+            for alias, aliased in targets.items()
+        )
         tools.save(module_file, content)
 
     @property
@@ -166,8 +173,9 @@ class SpirvtoolsConan(ConanFile):
 
     @property
     def _module_file_rel_path(self):
-        return os.path.join(self._module_subfolder,
-                            "conan-official-{}-targets.cmake".format(self.name))
+        return os.path.join(
+            self._module_subfolder, f"conan-official-{self.name}-targets.cmake"
+        )
 
     def package_info(self):
         self.cpp_info.filenames["cmake_find_package"] = "SPIRV-Tools"
@@ -219,5 +227,5 @@ class SpirvtoolsConan(ConanFile):
             self.cpp_info.components["spirv-tools-reduce"].requires = ["spirv-tools-core", "spirv-tools-opt"]
 
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: %s" % bin_path)
+        self.output.info(f"Appending PATH environment variable: {bin_path}")
         self.env_info.path.append(bin_path)

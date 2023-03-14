@@ -78,9 +78,12 @@ class DbusConan(ConanFile):
             self.requires("xorg/system")
 
     def validate(self):
-        if Version(self.version) >= "1.14.0":
-            if self.settings.compiler == "gcc" and Version(self.settings.compiler.version) < 7:
-                raise ConanInvalidConfiguration(f"{self.ref} requires at least gcc 7.")
+        if (
+            Version(self.version) >= "1.14.0"
+            and self.settings.compiler == "gcc"
+            and Version(self.settings.compiler.version) < 7
+        ):
+            raise ConanInvalidConfiguration(f"{self.ref} requires at least gcc 7.")
 
         if not self._meson_available and self.settings.os == "Windows":
             raise ConanInvalidConfiguration(f"{self.ref} does not support Windows. Contributions welcome.")
@@ -88,9 +91,10 @@ class DbusConan(ConanFile):
     def build_requirements(self):
         if self._meson_available:
             self.tool_requires("meson/1.0.0")
-        if self._meson_available or self.options.get_safe("with_systemd"):
-            if not self.conf.get("tools.gnu:pkg_config",check_type=str):
-                self.tool_requires("pkgconf/1.9.3")
+        if (
+            self._meson_available or self.options.get_safe("with_systemd")
+        ) and not self.conf.get("tools.gnu:pkg_config", check_type=str):
+            self.tool_requires("pkgconf/1.9.3")
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
@@ -151,9 +155,7 @@ class DbusConan(ConanFile):
             meson.build()
         else:
             cmake = CMake(self)
-            build_script_folder = None
-            if Version(self.version) < "1.14.0":
-                build_script_folder = "cmake"
+            build_script_folder = "cmake" if Version(self.version) < "1.14.0" else None
             cmake.configure(build_script_folder=build_script_folder)
             cmake.build()
 
@@ -184,14 +186,17 @@ class DbusConan(ConanFile):
         )
 
     def _create_cmake_module_alias_targets(self, module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent(f"""\
+        content = "".join(
+            textwrap.dedent(
+                f"""\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """)
+            """
+            )
+            for alias, aliased in targets.items()
+        )
         save(self, module_file, content)
 
     @property

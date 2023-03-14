@@ -15,4 +15,4 @@ class TestPackageConan(ConanFile):
         if not tools.cross_building(self):
             bin_path = os.path.join("bin", "test_package")
             arfont = os.path.join(self.source_folder, "example.arfont")
-            self.run("{} {}".format(bin_path, arfont), run_environment=True)
+            self.run(f"{bin_path} {arfont}", run_environment=True)

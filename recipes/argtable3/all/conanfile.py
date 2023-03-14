@@ -61,14 +61,17 @@ class Argtable3Conan(ConanFile):
         return os.path.join("lib", "cmake", f"conan-official-{self.name}-targets.cmake")
 
     def _create_cmake_module_alias_targets(self, module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent(f"""\
+        content = "".join(
+            textwrap.dedent(
+                f"""\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """)
+            """
+            )
+            for alias, aliased in targets.items()
+        )
         save(self, module_file, content)
 
     def package(self):

@@ -70,12 +70,8 @@ class Base64Conan(ConanFile):
         return is_msvc(self) or Version(self.version) >= "0.5.0"
 
     def generate(self):
-        if self._use_cmake:
-            tc = CMakeToolchain(self)
-            tc.generate()
-        else:
-            tc = AutotoolsToolchain(self)
-            tc.generate()
+        tc = CMakeToolchain(self) if self._use_cmake else AutotoolsToolchain(self)
+        tc.generate()
 
     def build(self):
         apply_conandata_patches(self)
@@ -88,17 +84,14 @@ class Base64Conan(ConanFile):
                 cmake.build(target="base64")
         else:
             env = Environment()
-            if self.settings.arch == "x86" or self.settings.arch == "x86_64":
+            if self.settings.arch in ["x86", "x86_64"]:
                 env.append("AVX2_CFLAGS", "-mavx2")
                 env.append("SSSE3_CFLAGS", "-mssse3")
                 env.append("SSE41_CFLAGS", "-msse4.1")
                 env.append("SSE42_CFLAGS", "-msse4.2")
                 env.append("AVX_CFLAGS", "-mavx")
-            else:
-                # ARM-specific instructions can be enabled here
-                pass
             with env.vars(self).apply(), \
-                 chdir(self, self.source_folder):
+                     chdir(self, self.source_folder):
                 autotools = Autotools(self)
                 autotools.make(target="lib/libbase64.a")
 

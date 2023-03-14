@@ -57,7 +57,7 @@ class CppSortConan(ConanFile):
         compiler = str(self.settings.compiler)
         version = str(self.settings.compiler.version)
         try:
-            minimum_version = self._compilers_minimum_version[str(compiler)]
+            minimum_version = self._compilers_minimum_version[compiler]
             if minimum_version and loose_lt_semver(version, minimum_version):
                 msg = (
                     f"{self.ref} requires C++{self._minimum_cpp_standard} features "
