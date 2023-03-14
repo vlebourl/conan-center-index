@@ -45,7 +45,7 @@ class OpenldapConan(ConanFile):
             self.requires("cyrus-sasl/2.1.27")
 
     def validate(self):
-        if self.settings.os not in ["Linux", "FreeBSD", "MacOS"]:
+        if self.settings.os not in ["Linux", "FreeBSD", "Macos"]:
             raise ConanInvalidConfiguration(
                 f"{self.name} is only supported on Unix platforms")
 
@@ -106,5 +106,5 @@ class OpenldapConan(ConanFile):
             "Appending PATH environment variable: {}".format(bin_path))
 
         self.cpp_info.libs = ["ldap", "lber"]
-        if self.settings.os in ["Linux", "FreeBSD", "MacOS"]:
+        if self.settings.os in ["Linux", "FreeBSD", "Macos"]:
             self.cpp_info.system_libs = ["pthread"]
