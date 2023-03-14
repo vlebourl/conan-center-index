@@ -45,9 +45,9 @@ class OpenldapConan(ConanFile):
             self.requires("cyrus-sasl/2.1.27")
 
     def validate(self):
-        if self.settings.os != "Linux":
+        if self.settings.os not in ["Linux", "FreeBSD", "Macos"]:
             raise ConanInvalidConfiguration(
-                f"{self.name} is only supported on Linux")
+                f"{self.name} is only supported on Unix platforms")
 
     def _configure_autotools(self):
         if self._autotools:
@@ -69,7 +69,8 @@ class OpenldapConan(ConanFile):
 
         # Need to link to -pthread instead of -lpthread for gcc 8 shared=True
         # on CI job. Otherwise, linking fails.
-        self._autotools.libs.remove("pthread")
+        if "pthread" in self._autotools.libs:
+            self._autotools.libs.remove("pthread")
         self._configure_vars["LIBS"] = self._configure_vars["LIBS"].replace(
             "-lpthread", "-pthread")
 
@@ -106,5 +107,5 @@ class OpenldapConan(ConanFile):
             "Appending PATH environment variable: {}".format(bin_path))
 
         self.cpp_info.libs = ["ldap", "lber"]
-        if self.settings.os in ["Linux", "FreeBSD"]:
+        if self.settings.os in ["Linux", "FreeBSD", "Macos"]:
             self.cpp_info.system_libs = ["pthread"]
