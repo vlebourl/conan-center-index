@@ -103,8 +103,7 @@ class OpenldapConan(ConanFile):
     def package_info(self):
         bin_path = os.path.join(self.package_folder, "bin")
         self.env_info.PATH.append(bin_path)
-        self.output.info(
-            "Appending PATH environment variable: {}".format(bin_path))
+        self.output.info(f"Appending PATH environment variable: {bin_path}")
 
         self.cpp_info.libs = ["ldap", "lber"]
         if self.settings.os in ["Linux", "FreeBSD", "Macos"]:
