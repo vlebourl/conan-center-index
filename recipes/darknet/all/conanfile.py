@@ -30,17 +30,11 @@ class DarknetConan(ConanFile):
 
     @property
     def _lib_to_compile(self):
-        if not self.options.shared:
-            return "$(ALIB)"
-        else:
-            return "$(SLIB)"
+        return "$(SLIB)" if self.options.shared else "$(ALIB)"
 
     @property
     def _shared_lib_extension(self):
-        if self.settings.os == "Macos":
-            return ".dylib"
-        else:
-            return ".so"
+        return ".dylib" if self.settings.os == "Macos" else ".so"
 
     def _patch_sources(self):
         for patch in self.conan_data["patches"].get(self.version, []):
@@ -48,12 +42,12 @@ class DarknetConan(ConanFile):
         tools.replace_in_file(
             os.path.join(self._source_subfolder, "Makefile"),
             "SLIB=libdarknet.so",
-            "SLIB=libdarknet" + self._shared_lib_extension
+            f"SLIB=libdarknet{self._shared_lib_extension}",
         )
         tools.replace_in_file(
             os.path.join(self._source_subfolder, "Makefile"),
             "all: obj backup results $(SLIB) $(ALIB) $(EXEC)",
-            "all: obj backup results " + self._lib_to_compile
+            f"all: obj backup results {self._lib_to_compile}",
         )
 
     def configure(self):
@@ -78,7 +72,7 @@ class DarknetConan(ConanFile):
         self._patch_sources()
         with tools.chdir(self._source_subfolder):
             with tools.environment_append({"PKG_CONFIG_PATH": self.build_folder}):
-                args = ["OPENCV={}".format("1" if self.options.with_opencv else "0")]
+                args = [f'OPENCV={"1" if self.options.with_opencv else "0"}']
                 env_build = AutoToolsBuildEnvironment(self)
                 env_build.fpic = self.options.get_safe("fPIC", True)
                 env_build.make(args=args)

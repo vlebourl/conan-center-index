@@ -60,16 +60,17 @@ class UTConan(ConanFile):
             if not self.options.get_safe("disable_module", True):
                 self.output.warn("The 'disable_module' option must be enabled when using MSVC.")
         if not is_msvc(self):
-            min_version = self._minimum_compilers_version.get(
-                str(self.settings.compiler))
-            if not min_version:
-                self.output.warn(f"{self.ref} recipe lacks information about the {self.settings.compiler} "
-                                 "compiler support.")
-            else:
+            if min_version := self._minimum_compilers_version.get(
+                str(self.settings.compiler)
+            ):
                 if Version(self.settings.compiler.version) < min_version:
                     raise ConanInvalidConfiguration(
                         f"{self.ref} requires C++{self._minimum_cpp_standard} support. "
                         f"The current compiler {self.settings.compiler} {self.settings.compiler.version} does not support it.")
+
+            else:
+                self.output.warn(f"{self.ref} recipe lacks information about the {self.settings.compiler} "
+                                 "compiler support.")
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
@@ -80,8 +81,7 @@ class UTConan(ConanFile):
         tc.cache_variables["BOOST_UT_BUILD_EXAMPLES"] = False
         tc.cache_variables["BOOST_UT_BUILD_TESTS"] = not self.conf.get("tools.build:skip_test", default=True, check_type=bool)
         tc.cache_variables["PROJECT_DISABLE_VERSION_SUFFIX"] = True
-        disable_module = self.options.get_safe("disable_module")
-        if disable_module:
+        if disable_module := self.options.get_safe("disable_module"):
             tc.cache_variables["BOOST_UT_DISABLE_MODULE"] = disable_module
         tc.generate()
     
@@ -114,7 +114,9 @@ class UTConan(ConanFile):
         self.cpp_info.components["ut"].names["cmake_find_package_multi"] = "ut"
 
         if newer_than_1_1_8:
-            self.cpp_info.components["ut"].includedirs = [os.path.join("include", "ut-" + self.version, "include")]
+            self.cpp_info.components["ut"].includedirs = [
+                os.path.join("include", f"ut-{self.version}", "include")
+            ]
 
         if self.options.get_safe("disable_module"):
             self.cpp_info.components["ut"].defines = ["BOOST_UT_DISABLE_MODULE=1"]

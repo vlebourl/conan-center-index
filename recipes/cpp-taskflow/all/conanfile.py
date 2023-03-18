@@ -46,7 +46,9 @@ class CppTaskflowConan(ConanFile):
         }
 
         if compiler not in minimal_version[min_req_cppstd]:
-            self.output.info("%s requires a compiler that supports at least C++%s" % (self.name, min_req_cppstd))
+            self.output.info(
+                f"{self.name} requires a compiler that supports at least C++{min_req_cppstd}"
+            )
             return
 
         # Exclude compilers not supported by cpp-taskflow
@@ -57,7 +59,7 @@ class CppTaskflowConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        os.rename("taskflow-" + self.version, self._source_subfolder)
+        os.rename(f"taskflow-{self.version}", self._source_subfolder)
 
     def package(self):
         self.copy(pattern="LICENSE", dst="licenses", src=self._source_subfolder)

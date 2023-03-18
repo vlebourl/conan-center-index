@@ -19,7 +19,7 @@ class DirectShowBaseClassesConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        os.rename('Windows-classic-samples-%s' % self.version, self._source_subfolder)
+        os.rename(f'Windows-classic-samples-{self.version}', self._source_subfolder)
 
     def _configure_cmake(self):
         cmake = CMake(self)

@@ -101,7 +101,7 @@ class BdwGcConan(ConanFile):
             elif option == "cplusplus":
                 tc.cache_variables["enable_cplusplus"] = str(self.options.get_safe(option))
             else:
-                tc.variables["enable_{}".format(option)] = self.options.get_safe(option)
+                tc.variables[f"enable_{option}"] = self.options.get_safe(option)
         tc.variables["disable_gc_debug"] = not self.options.gc_debug
         tc.variables["disable_handle_fork"] = not self.options.handle_fork
         tc.variables["install_headers"] = True

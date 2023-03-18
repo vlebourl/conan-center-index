@@ -43,8 +43,9 @@ class AsioGrpcConan(ConanFile):
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
             check_min_cppstd(self, self._min_cppstd)
-        minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
-        if minimum_version:
+        if minimum_version := self._compilers_minimum_version.get(
+            str(self.settings.compiler), False
+        ):
             if Version(self.settings.compiler.version) < minimum_version:
                 raise ConanInvalidConfiguration(f"{self.name} requires C++{self._min_cppstd}, which your compiler does not support.")
         else:
@@ -99,15 +100,15 @@ class AsioGrpcConan(ConanFile):
 
     def package_info(self):
         build_modules = [os.path.join("lib", "cmake", "asio-grpc", "AsioGrpcProtobufGenerator.cmake")]
-        
+
         self.cpp_info.requires = ["grpc::grpc++_unsecure"]
-        if self.options.backend == "boost":
-            self.cpp_info.defines = ["AGRPC_BOOST_ASIO"]
-            self.cpp_info.requires.append("boost::headers")
         if self.options.backend == "asio":
             self.cpp_info.defines = ["AGRPC_STANDALONE_ASIO"]
             self.cpp_info.requires.append("asio::asio")
-        if self.options.backend == "unifex":
+        elif self.options.backend == "boost":
+            self.cpp_info.defines = ["AGRPC_BOOST_ASIO"]
+            self.cpp_info.requires.append("boost::headers")
+        elif self.options.backend == "unifex":
             self.cpp_info.defines = ["AGRPC_UNIFEX"]
             self.cpp_info.requires.append("libunifex::unifex")
 

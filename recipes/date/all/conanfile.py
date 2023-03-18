@@ -119,7 +119,7 @@ class DateConan(ConanFile):
             # TODO: Remove legacy .names attribute when conan 2.0 is released
             self.cpp_info.components["date-tz"].names["cmake_find_package"] = "date-tz"
             self.cpp_info.components["date-tz"].names["cmake_find_package_multi"] = "date-tz"
-            lib_name = "{}tz".format("date-" if Version(self.version) >= "3.0.0" else "")
+            lib_name = f'{"date-" if Version(self.version) >= "3.0.0" else ""}tz'
             self.cpp_info.components["date-tz"].libs = [lib_name]
             if self.settings.os == "Linux":
                 self.cpp_info.components["date-tz"].system_libs.append("pthread")
@@ -128,12 +128,12 @@ class DateConan(ConanFile):
             if not self.options.use_system_tz_db:
                 self.cpp_info.components["date-tz"].requires.append("libcurl::libcurl")
 
-            if self.options.use_system_tz_db and not self.settings.os == "Windows":
+            if self.options.use_system_tz_db and self.settings.os != "Windows":
                 use_os_tzdb = 1
             else:
                 use_os_tzdb = 0
 
-            defines = ["USE_OS_TZDB={}".format(use_os_tzdb)]
+            defines = [f"USE_OS_TZDB={use_os_tzdb}"]
             if self.settings.os == "Windows" and self.options.shared:
                 defines.append("DATE_USE_DLL=1")
 

@@ -159,9 +159,7 @@ class AssimpConan(ConanFile):
 
     @property
     def _depends_on_openddlparser(self):
-        if Version(self.version) < "5.1.0":
-            return False
-        return self.options.with_opengex
+        return False if Version(self.version) < "5.1.0" else self.options.with_opengex
 
     def requirements(self):
         # TODO: unvendor others libs:
@@ -278,6 +276,5 @@ class AssimpConan(ConanFile):
         if self.settings.os in ["Linux", "FreeBSD"]:
             self.cpp_info.system_libs = ["rt", "m", "pthread"]
         if not self.options.shared:
-            libcxx = stdcpp_library(self)
-            if libcxx:
+            if libcxx := stdcpp_library(self):
                 self.cpp_info.system_libs.append(libcxx)

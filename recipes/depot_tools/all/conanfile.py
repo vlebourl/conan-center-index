@@ -36,7 +36,9 @@ class DepotToolsConan(ConanFile):
                 dest = os.readlink(symlink)
                 os.remove(symlink)
                 shutil.copy(os.path.join(root, dest), symlink, follow_symlinks=False)
-                self.output.info("Replaced symlink '%s' with its destination file '%s'" % (symlink, dest))
+                self.output.info(
+                    f"Replaced symlink '{symlink}' with its destination file '{dest}'"
+                )
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version], destination=self._source_subfolder)
@@ -64,19 +66,20 @@ class DepotToolsConan(ConanFile):
                         if type(sig) is str:
                             sig = [ord(s) for s in sig]
                         if len(sig) >= 2 and sig[0] == 0x23 and sig[1] == 0x21:
-                            self.output.info('chmod on script file %s' % file_it)
+                            self.output.info(f'chmod on script file {file_it}')
                             chmod_plus_x(filename)
                         elif sig == [0x7F, 0x45, 0x4C, 0x46]:
-                            self.output.info('chmod on ELF file %s' % file_it)
+                            self.output.info(f'chmod on ELF file {file_it}')
                             chmod_plus_x(filename)
-                        elif \
-                                sig == [0xCA, 0xFE, 0xBA, 0xBE] or \
-                                sig == [0xBE, 0xBA, 0xFE, 0xCA] or \
-                                sig == [0xFE, 0xED, 0xFA, 0xCF] or \
-                                sig == [0xCF, 0xFA, 0xED, 0xFE] or \
-                                sig == [0xFE, 0xED, 0xFA, 0xCE] or \
-                                sig == [0xCE, 0xFA, 0xED, 0xFE]:
-                            self.output.info('chmod on Mach-O file %s' % file_it)
+                        elif sig in [
+                            [0xCA, 0xFE, 0xBA, 0xBE],
+                            [0xBE, 0xBA, 0xFE, 0xCA],
+                            [0xFE, 0xED, 0xFA, 0xCF],
+                            [0xCF, 0xFA, 0xED, 0xFE],
+                            [0xFE, 0xED, 0xFA, 0xCE],
+                            [0xCE, 0xFA, 0xED, 0xFE],
+                        ]:
+                            self.output.info(f'chmod on Mach-O file {file_it}')
                             chmod_plus_x(filename)
 
     def package_id(self):
@@ -86,7 +89,7 @@ class DepotToolsConan(ConanFile):
 
     def package_info(self):
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH env var with : {}".format(bin_path))
+        self.output.info(f"Appending PATH env var with : {bin_path}")
         self.env_info.PATH.append(bin_path)
 
         self.env_info.DEPOT_TOOLS_UPDATE = "0"

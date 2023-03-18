@@ -64,9 +64,9 @@ def transform_conanfile(node):
         "settings_target": [_settings_transform()],
         "conf": dict_class,
     }
-    
+
     for f, t in dynamic_fields.items():
-        node.locals[f] = [i for i in t]
+        node.locals[f] = list(t)
 
 
 astroid.MANAGER.register_transform(

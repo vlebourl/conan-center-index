@@ -9,13 +9,10 @@ class TestPackageConan(ConanFile):
         pass # please no warning that we build nothing
 
     def test(self):
-        if not tools.cross_building(self.settings):
-            output = StringIO()
-            self.run("djinni --help", output=output, run_environment=True)
-            output.seek(0, 0)
-            found_usage = False
-            for line in output:
-                if "Usage: djinni [options]" in line:
-                    found_usage = True
-                    break
-            assert(found_usage)
+        if tools.cross_building(self.settings):
+            return
+        output = StringIO()
+        self.run("djinni --help", output=output, run_environment=True)
+        output.seek(0, 0)
+        found_usage = any("Usage: djinni [options]" in line for line in output)
+        assert(found_usage)

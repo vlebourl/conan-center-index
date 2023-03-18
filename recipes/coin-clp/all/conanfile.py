@@ -85,10 +85,10 @@ class CoinClpConan(ConanFile):
             if self.settings.compiler == "Visual Studio":
                 with tools.vcvars(self.settings):
                     env = {
-                        "CC": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                        "CXX": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                        "LD": "{} link -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                        "AR": "{} lib".format(tools.unix_path(self._user_info_build["automake"].ar_lib)),
+                        "CC": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
+                        "CXX": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
+                        "LD": f'{tools.unix_path(self._user_info_build["automake"].compile)} link -nologo',
+                        "AR": f'{tools.unix_path(self._user_info_build["automake"].ar_lib)} lib',
                     }
                     with tools.environment_append(env):
                         yield
@@ -101,9 +101,7 @@ class CoinClpConan(ConanFile):
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
         self._autotools.libs = []
         yes_no = lambda v: "yes" if v else "no"
-        configure_args = [
-            "--enable-shared={}".format(yes_no(self.options.shared)),
-        ]
+        configure_args = [f"--enable-shared={yes_no(self.options.shared)}"]
         if self.settings.compiler == "Visual Studio" and Version(self.settings.compiler.version) >= 12:
             self._autotools.flags.append("-FS")
         self._autotools.configure(self._source_subfolder, args=configure_args)
@@ -146,5 +144,5 @@ class CoinClpConan(ConanFile):
         self.cpp_info.components["osi-clp"].requires = ["clp", "coin-osi::coin-osi"]
 
         bin_path = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.output.info(f"Appending PATH environment variable: {bin_path}")
         self.env_info.PATH.append(bin_path)

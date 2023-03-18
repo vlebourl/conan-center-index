@@ -156,7 +156,7 @@ class CBlosc2Conan(ConanFile):
         self.cpp_info.set_property("pkg_config_name", "blosc2")
 
         prefix = "lib" if is_msvc(self) and not self.options.shared else ""
-        self.cpp_info.libs = ["{}blosc2".format(prefix)]
+        self.cpp_info.libs = [f"{prefix}blosc2"]
         if self.settings.os in ["Linux", "FreeBSD"]:
             self.cpp_info.system_libs = ["rt", "m", "pthread"]
 

@@ -32,7 +32,7 @@ class CubicInterpolationConan(ConanFile):
 
     @property
     def _is_msvc(self):
-        return str(self.settings.compiler) in ["Visual Studio", "msvc"]
+        return str(self.settings.compiler) in {"Visual Studio", "msvc"}
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -61,7 +61,10 @@ class CubicInterpolationConan(ConanFile):
         return ["filesystem", "math", "serialization"]
 
     def validate(self):
-        miss_boost_required_comp = any(getattr(self.options["boost"], "without_{}".format(boost_comp), True) for boost_comp in self._required_boost_components)
+        miss_boost_required_comp = any(
+            getattr(self.options["boost"], f"without_{boost_comp}", True)
+            for boost_comp in self._required_boost_components
+        )
         if self.options["boost"].header_only or miss_boost_required_comp:
             raise ConanInvalidConfiguration("{0} requires non header-only boost with these components: {1}".format(self.name, ", ".join(self._required_boost_components)))
 

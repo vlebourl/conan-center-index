@@ -35,20 +35,20 @@ def main():
         if sys.argv[1] == sys.argv[2]:
             raise ValueError("Source and destination files must be different")
 
-        with open(sys.argv[1], "r") as src_file, open(sys.argv[2], "w") as dst_file:
+        with (open(sys.argv[1], "r") as src_file, open(sys.argv[2], "w") as dst_file):
             special_chars = "\'\"\\"
 
             for line in src_file:
                 dst_file.write('\"')
 
                 for i, c in enumerate(line.rstrip()):
-                    if special_chars.find(c) != -1:
+                    if c in special_chars:
                         dst_file.write('\\')
                     dst_file.write(c)
 
                 dst_file.write('\\n\"\n')
 
-        print("File2String: successfully converted {} to {}".format(sys.argv[1], sys.argv[2]))
+        print(f"File2String: successfully converted {sys.argv[1]} to {sys.argv[2]}")
     except (ValueError, IOError) as error:
         print(error)
         sys.exit(1)

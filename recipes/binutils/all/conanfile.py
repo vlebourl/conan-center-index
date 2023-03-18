@@ -262,9 +262,8 @@ class _ArchOs:
         extra = {}
 
         if _os == "Android" and triplet.abi:
-            m = re.match(".*([0-9]+)", triplet.abi)
-            if m:
-                extra["os.api_level"] = m.group(1)
+            if m := re.match(".*([0-9]+)", triplet.abi):
+                extra["os.api_level"] = m[1]
 
         # Assume first architecture
         return cls(arch=archs[0], os=_os, extra=extra)
@@ -276,9 +275,10 @@ class _ArchOs:
             return False
         self_extra_keys = set(self.extra.keys())
         other_extra_keys = set(other.extra.keys())
-        if (self_extra_keys - other_extra_keys) or (other_extra_keys - self_extra_keys):
-            return False
-        return True
+        return (
+            not self_extra_keys - other_extra_keys
+            and not other_extra_keys - self_extra_keys
+        )
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__}:arch='{self.arch}',os='{self.os}',extra={self.extra}>"
@@ -393,12 +393,9 @@ class _GNUTriplet:
         return cls.OS_TO_GNU_VENDOR_LUT.get(archos.os, "pc")
 
     @classmethod
-    def calculate_gnu_abi(self, archos: _ArchOs) -> typing.Optional[str]:
+    def calculate_gnu_abi(cls, archos: _ArchOs) -> typing.Optional[str]:
         if archos.os in ("baremetal", ):
-            if archos.arch in ("armv7",):
-                return "eabi"
-            else:
-                return "elf"
+            return "eabi" if archos.arch in ("armv7",) else "elf"
         abi_start = None
         if archos.os in ("Linux", ):
             abi_start = "gnu"
@@ -432,9 +429,8 @@ class _GNUTriplet:
 
     def __repr__(self) -> str:
         def x(v):
-            if v is None:
-                return None
-            return f"'{v}'"
+            return None if v is None else f"'{v}'"
+
         return f"<{type(self).__name__}:machine={x(self.machine)},vendor={x(self.vendor)},os={x(self.os)},abi={x(self.abi)}>"
 
 

@@ -30,7 +30,7 @@ class ChaiScriptConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = "ChaiScript-" + self.version
+        extracted_dir = f"ChaiScript-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     def config_options(self):

@@ -34,10 +34,6 @@ class BZip3Conan(ConanFile):
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
-        # FIXME: could be supported on Windows:
-        #  - MinGW with posix thread supports it out of the box
-        #  - otherwise, add pthreads4w to requirements and link it in CMakeLists
-        if self.settings.os == "Windows":
             del self.options.with_thread
 
     def configure(self):

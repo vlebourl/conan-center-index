@@ -48,17 +48,11 @@ class bimgConan(ConanFile):
 
     @property
     def _lib_target_prefix(self):
-        if self.settings.os == "Windows":
-            return "libs\\"
-        else:
-            return ""
+        return "libs\\" if self.settings.os == "Windows" else ""
 
     @property
     def _tool_target_prefix(self):
-        if self.settings.os == "Windows":
-            return "tools\\"
-        else:
-            return ""
+        return "tools\\" if self.settings.os == "Windows" else ""
 
     @property
     def _projs(self):
@@ -119,12 +113,8 @@ class bimgConan(ConanFile):
     def generate(self):
         vbe = VirtualBuildEnv(self)
         vbe.generate()
-        if is_msvc(self):
-            tc = VCVars(self)
-            tc.generate()
-        else:
-            tc = AutotoolsToolchain(self)
-            tc.generate()
+        tc = VCVars(self) if is_msvc(self) else AutotoolsToolchain(self)
+        tc.generate()
 
     def build(self):
         if is_msvc(self):
@@ -203,7 +193,7 @@ class bimgConan(ConanFile):
 
         # Get build bin folder
         for bimg_out_dir in os.listdir(os.path.join(self._bimg_path, ".build")):
-            if not bimg_out_dir=="projects":
+            if bimg_out_dir != "projects":
                 build_bin = os.path.join(self._bimg_path, ".build", bimg_out_dir, "bin")
                 break
 
@@ -216,7 +206,7 @@ class bimgConan(ConanFile):
         # Copy tools
         if self.options.tools:
             copy(self, pattern="texturec*", dst=os.path.join(self.package_folder, "bin"), src=build_bin, keep_path=False)
-        
+
         # Rename for consistency across platforms and configs
         for bimg_file in Path(os.path.join(self.package_folder, "lib")).glob("*bimg*"):
             fExtra = ""

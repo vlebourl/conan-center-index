@@ -74,13 +74,15 @@ class CppunitConan(ConanFile):
             # https://github.com/conan-io/conan-center-index/pull/15759#issuecomment-1419046535
             tc.extra_ldflags.append("-headerpad_max_install_names")
         yes_no = lambda v: "yes" if v else "no"
-        tc.configure_args.extend([
-            "--enable-debug={}".format(yes_no(self.settings.build_type == "Debug")),
-            "--enable-doxygen=no",
-            "--enable-dot=no",
-            "--enable-werror=no",
-            "--enable-html-docs=no",
-        ])
+        tc.configure_args.extend(
+            [
+                f'--enable-debug={yes_no(self.settings.build_type == "Debug")}',
+                "--enable-doxygen=no",
+                "--enable-dot=no",
+                "--enable-werror=no",
+                "--enable-html-docs=no",
+            ]
+        )
         env = tc.environment()
         if is_msvc(self):
             compile_wrapper = unix_path(self, self.conf.get("user.automake:compile-wrapper", check_type=str))
@@ -116,8 +118,7 @@ class CppunitConan(ConanFile):
         self.cpp_info.set_property("pkg_config_name", "cppunit")
         self.cpp_info.libs = ["cppunit"]
         if not self.options.shared:
-            libcxx = stdcpp_library(self)
-            if libcxx:
+            if libcxx := stdcpp_library(self):
                 self.cpp_info.system_libs.append(libcxx)
             if self.settings.os in ["Linux", "FreeBSD"]:
                 self.cpp_info.system_libs.extend(["dl", "m"])

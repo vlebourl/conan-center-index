@@ -82,8 +82,9 @@ class BehaviorTreeCPPConan(ConanFile):
             if not minimum_version:
                 self.output.warn(f"{self.ref} requires C++{self._minimum_cppstd_required}. Your compiler is unknown. Assuming it supports C++{self._minimum_cppstd_required}.")
             elif Version(self.info.settings.compiler.version) < minimum_version:
-                raise ConanInvalidConfiguration("BehaviorTree.CPP requires C++{}, which your compiler does not support."
-                                                .format(self._minimum_cppstd_required))
+                raise ConanInvalidConfiguration(
+                    f"BehaviorTree.CPP requires C++{self._minimum_cppstd_required}, which your compiler does not support."
+                )
 
         if self.settings.compiler == "clang" and str(self.settings .compiler.libcxx) == "libstdc++":
             raise ConanInvalidConfiguration(f"{self.ref} needs recent libstdc++ with charconv. please switch to gcc, or to libc++")
@@ -142,12 +143,12 @@ class BehaviorTreeCPPConan(ConanFile):
         if self.settings.os in ("Linux", "FreeBSD"):
             self.cpp_info.components[libname].system_libs.append("pthread")
         if Version(self.version) >= "4.0" and \
-            self.settings.compiler == "gcc" and Version(self.settings.compiler.version).major == "8":
+                self.settings.compiler == "gcc" and Version(self.settings.compiler.version).major == "8":
             self.cpp_info.components[libname].system_libs.append("stdc++fs")
 
         if self.options.with_tools:
             bin_path = os.path.join(self.package_folder, "bin")
-            self.output.info("Appending PATH env var with : {}".format(bin_path))
+            self.output.info(f"Appending PATH env var with : {bin_path}")
             self.env_info.PATH.append(bin_path)
 
         # TODO: to remove in conan v2 once cmake_find_package* generators removed

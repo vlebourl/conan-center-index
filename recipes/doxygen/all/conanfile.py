@@ -63,9 +63,11 @@ class DoxygenConan(ConanFile):
 
     def validate(self):
         minimum_compiler_version = self._minimum_compiler_version()
-        if minimum_compiler_version is not None:
-            if Version(self.settings.compiler.version) < minimum_compiler_version:
-                raise ConanInvalidConfiguration(f"Compiler version too old. At least {minimum_compiler_version} is required.")
+        if (
+            minimum_compiler_version is not None
+            and Version(self.settings.compiler.version) < minimum_compiler_version
+        ):
+            raise ConanInvalidConfiguration(f"Compiler version too old. At least {minimum_compiler_version} is required.")
         if (self.settings.compiler == "Visual Studio" and
                 Version(self.settings.compiler.version) <= "14" and
                 Version(self.version) == "1.8.18"):

@@ -74,7 +74,6 @@ class CairommConan(ConanFile):
     def configure(self):
         if self.options.shared:
             del self.options.fPIC
-        if self.options.shared:
             self.options["cairo"].shared = True
 
     def build_requirements(self):

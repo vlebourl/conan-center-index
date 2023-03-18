@@ -24,7 +24,10 @@ class ImportTools(BaseChecker):
     def visit_importfrom(self, node: nodes.ImportFrom) -> None:
         basename = node.modname
         names = [name for name, _ in node.names]
-        if basename == 'conan' and 'tools' in names:
-            self.add_message("conan-import-tools", node=node)
-        elif re.match(r'conan\.tools\.[^.]+\..+', basename):
+        if (
+            basename == 'conan'
+            and 'tools' in names
+            or (basename != 'conan' or 'tools' not in names)
+            and re.match(r'conan\.tools\.[^.]+\..+', basename)
+        ):
             self.add_message("conan-import-tools", node=node)

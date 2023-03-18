@@ -38,32 +38,32 @@ class TestPackageConan(ConanFile):
         return f"{self.deps_user_info['binutils'].prefix}{exe}"
 
     def build(self):
-        if not tools.cross_building(self):
+        if tools.cross_building(self):
+            return
+        if not os.path.isfile(self._test_package_assembly_source):
+            self.output.warn(f"Missing {self._test_package_assembly_source}.\ntest_package does not support this target os/arch. Please consider adding it. (It's a great learning experience)")
+        else:
+            tools.mkdir(os.path.join(self.build_folder, "bin"))
+            tools.mkdir(os.path.join(self.build_folder, "lib"))
 
-            if not os.path.isfile(self._test_package_assembly_source):
-                self.output.warn(f"Missing {self._test_package_assembly_source}.\ntest_package does not support this target os/arch. Please consider adding it. (It's a great learning experience)")
-            else:
-                tools.mkdir(os.path.join(self.build_folder, "bin"))
-                tools.mkdir(os.path.join(self.build_folder, "lib"))
+            gas = self._append_gnu_triplet("as")
+            ld = self._append_gnu_triplet("ld")
+            extension = ""
+            if self._target_os == "Windows":
+                extension = ".exe"
 
-                gas = self._append_gnu_triplet("as")
-                ld = self._append_gnu_triplet("ld")
-                extension = ""
-                if self._target_os == "Windows":
-                    extension = ".exe"
+                # Create minimum import library for kernel32.dll
+                dlltool = f"{self.deps_user_info['binutils'].gnu_triplet}-dlltool"
 
-                    # Create minimum import library for kernel32.dll
-                    dlltool = f"{self.deps_user_info['binutils'].gnu_triplet}-dlltool"
-
-                    dlltool_args = [dlltool, "--input-def", f"{self.source_folder}/Windows-kernel32.def", "--output-lib", f"{self.build_folder}/lib/libkernel32.a"]
-                    self.run(" ".join(dlltool_args))
+                dlltool_args = [dlltool, "--input-def", f"{self.source_folder}/Windows-kernel32.def", "--output-lib", f"{self.build_folder}/lib/libkernel32.a"]
+                self.run(" ".join(dlltool_args))
 
 
-                assembler_args = [gas, self._test_package_assembly_source, "-o", f"{self.build_folder}/object.o"]
-                linker_args = [ld, f"{self.build_folder}/object.o", "-o", f"{self.build_folder}/bin/test_package{extension}"] + self._test_linker_args
+            assembler_args = [gas, self._test_package_assembly_source, "-o", f"{self.build_folder}/object.o"]
+            linker_args = [ld, f"{self.build_folder}/object.o", "-o", f"{self.build_folder}/bin/test_package{extension}"] + self._test_linker_args
 
-                self.run(" ".join(assembler_args))
-                self.run(" ".join(linker_args))
+            self.run(" ".join(assembler_args))
+            self.run(" ".join(linker_args))
 
     def _can_run_target(self):
         if self._settings_build.os != self._target_os:
@@ -73,14 +73,10 @@ class TestPackageConan(ConanFile):
         return self._settings_build.arch == self._target_arch
 
     def _has_as(self):
-        if self._target_os in ("Macos"):
-            return False
-        return True
+        return self._target_os not in "Macos"
 
     def _has_ld(self):
-        if self._target_os in ("Macos"):
-            return False
-        return True
+        return self._target_os not in "Macos"
 
     def test(self):
         # Run selftest (conversion between conan os/arch <=> gnu triplet)
@@ -107,7 +103,7 @@ class TestPackageConan(ConanFile):
                 assert bin_path.startswith(self.deps_cpp_info["binutils"].rootpath)
 
                 output = StringIO()
-                self.run("{} --version".format(bin_path), run_environment=True, output=output)
+                self.run(f"{bin_path} --version", run_environment=True, output=output)
                 text = output.getvalue()
                 print(text)
                 assert str(self.requires["binutils"].ref.version) in text

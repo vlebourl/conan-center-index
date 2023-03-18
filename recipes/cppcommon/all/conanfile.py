@@ -52,8 +52,9 @@ class CppCommon(ConanFile):
         if self.settings.compiler.cppstd:
             tools.check_min_cppstd(self, "17")
 
-        minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
-        if minimum_version:
+        if minimum_version := self._compilers_minimum_version.get(
+            str(self.settings.compiler), False
+        ):
             if tools.Version(self.settings.compiler.version) < minimum_version:
                 raise ConanInvalidConfiguration("cppcommon requires C++17, which your compiler does not support.")
         else:
@@ -95,5 +96,5 @@ class CppCommon(ConanFile):
         self.cpp_info.includedirs.append(os.path.join("include", "plugins"))
         if self.settings.os == "Linux":
             self.cpp_info.system_libs = ["pthread", "rt", "dl", "m"]
-        if self.settings.os == "Windows":
+        elif self.settings.os == "Windows":
             self.cpp_info.system_libs = ["userenv", "rpcrt4"]

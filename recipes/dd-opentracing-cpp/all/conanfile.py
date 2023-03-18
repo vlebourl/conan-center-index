@@ -66,8 +66,9 @@ class DatadogOpenTracingConan(ConanFile):
         if self.settings.compiler.get_safe("cppstd"):
             tools.check_min_cppstd(self, 14)
 
-        minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
-        if minimum_version:
+        if minimum_version := self._compilers_minimum_version.get(
+            str(self.settings.compiler), False
+        ):
             if tools.Version(self.settings.compiler.version) < minimum_version:
                 raise ConanInvalidConfiguration("Datadog-opentracing requires C++14, which your compiler does not support.")
         else:
@@ -112,8 +113,12 @@ class DatadogOpenTracingConan(ConanFile):
         self.cpp_info.names["cmake_find_package"] = "DataDogOpenTracing"
         self.cpp_info.names["cmake_find_package_multi"] = "DataDogOpenTracing"
         target_suffix = "" if self.options.shared else "-static"
-        self.cpp_info.components["dd_opentracing"].names["cmake_find_package"] = "dd_opentracing" + target_suffix
-        self.cpp_info.components["dd_opentracing"].names["cmake_find_package_multi"] = "dd_opentracing" + target_suffix
+        self.cpp_info.components["dd_opentracing"].names[
+            "cmake_find_package"
+        ] = f"dd_opentracing{target_suffix}"
+        self.cpp_info.components["dd_opentracing"].names[
+            "cmake_find_package_multi"
+        ] = f"dd_opentracing{target_suffix}"
         self.cpp_info.components["dd_opentracing"].requires = [
             "opentracing-cpp::opentracing-cpp", "zlib::zlib", "libcurl::libcurl",
             "msgpack::msgpack", "nlohmann_json::nlohmann_json",

@@ -81,17 +81,13 @@ class ArmadilloConan(ConanFile):
         cmake_layout(self, src_folder="src")
 
     def config_options(self):
-        if self.settings.os == "Windows":
-            del self.options.fPIC
         if self.settings.os == "Macos":
             # Macos will default to Accelerate framework
             self.options.use_blas = "framework_accelerate"
             self.options.use_lapack = "framework_accelerate"
 
-        # According with the CMakeLists file in armadillo, MinGW doesn't correctly handle thread_local.
-        # If any of MINGW, MSYS, CYGWIN or MSVC are True in during cmake configure, the ARMA_USE_EXTERN_RNG option will be set to false.
-        # Therefore, in these cases we remove the `use_extern_rng` option in conan
-        if self.settings.os == "Windows":
+        elif self.settings.os == "Windows":
+            del self.options.fPIC
             del self.options.use_extern_rng
 
     def configure(self):
@@ -116,12 +112,7 @@ class ArmadilloConan(ConanFile):
             ]
             if options_without_value and (len(options) != len(options_without_value)):
                 raise ConanInvalidConfiguration(
-                    "Options {} must all be set to '{}' to use this feature. To fix this, set option {} to '{}'.".format(
-                        ", ".join(options),
-                        value,
-                        ", ".join(options_without_value),
-                        value,
-                    )
+                    f"""Options {", ".join(options)} must all be set to '{value}' to use this feature. To fix this, set option {", ".join(options_without_value)} to '{value}'."""
                 )
 
         if (
@@ -133,16 +124,14 @@ class ArmadilloConan(ConanFile):
             )
 
         deprecated_opts = list(
-            set(
-                [
-                    opt
-                    for opt in [
-                        str(self.options.use_blas),
-                        str(self.options.use_lapack),
-                    ]
-                    if "system" in opt
+            {
+                opt
+                for opt in [
+                    str(self.options.use_blas),
+                    str(self.options.use_lapack),
                 ]
-            )
+                if "system" in opt
+            }
         )
 
         for opt in deprecated_opts:
@@ -180,16 +169,9 @@ class ArmadilloConan(ConanFile):
             self.options.use_blas == "intel_mkl"
             and self.options.use_lapack == "intel_mkl"
         ):
-            # Consumers can override this requirement with their own
-            # by using self.requires("intel-mkl/version@user/channel, override=True)
-            # in their consumer conanfile.py
-            if (
-                self.options.use_blas == "intel_mkl"
-                or self.options.use_lapack == "intel_mkl"
-            ):
-                self.output.warn(
-                    "The intel-mkl package does not exist in CCI. To use an Intel MKL package, override this requirement with your own recipe."
-                )
+            self.output.warn(
+                "The intel-mkl package does not exist in CCI. To use an Intel MKL package, override this requirement with your own recipe."
+            )
             self.requires("intel-mkl/2021.4")
 
     def generate(self):

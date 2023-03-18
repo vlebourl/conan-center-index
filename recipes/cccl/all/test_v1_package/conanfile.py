@@ -17,10 +17,10 @@ class CcclTestConan(ConanFile):
     def build(self):
         environment = {}
         if is_msvc(self):
-            environment.update(tools.vcvars_dict(self.settings))
-            #for k in environment.keys():
-                #self.output.highlight(k)
-                #self.output.highlight(environment[k])
+            environment |= tools.vcvars_dict(self.settings)
+                #for k in environment.keys():
+                    #self.output.highlight(k)
+                    #self.output.highlight(environment[k])
         with tools.environment_append(environment):
             cxxTest = tools.get_env("CXX")
             #cxxB = self.buildenv_info.vars["CXX"]

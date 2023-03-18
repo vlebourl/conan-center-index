@@ -119,14 +119,28 @@ class BackwardCppConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "Backward")
         self.cpp_info.set_property("cmake_target_name", "Backward::Backward")
 
-        self.cpp_info.defines.append("BACKWARD_HAS_UNWIND={}".format(int(self._has_stack_walking("unwind"))))
-        self.cpp_info.defines.append("BACKWARD_HAS_BACKTRACE={}".format(int(self._has_stack_walking("backtrace"))))
+        self.cpp_info.defines.append(
+            f'BACKWARD_HAS_UNWIND={int(self._has_stack_walking("unwind"))}'
+        )
+        self.cpp_info.defines.append(
+            f'BACKWARD_HAS_BACKTRACE={int(self._has_stack_walking("backtrace"))}'
+        )
 
-        self.cpp_info.defines.append("BACKWARD_HAS_BACKTRACE_SYMBOL={}".format(int(self._has_stack_details("backtrace_symbol"))))
-        self.cpp_info.defines.append("BACKWARD_HAS_DW={}".format(int(self._has_stack_details("dw"))))
-        self.cpp_info.defines.append("BACKWARD_HAS_BFD={}".format(int(self._has_stack_details("bfd"))))
-        self.cpp_info.defines.append("BACKWARD_HAS_DWARF={}".format(int(self._has_stack_details("dwarf"))))
-        self.cpp_info.defines.append("BACKWARD_HAS_PDB_SYMBOL={}".format(int(self.settings.os == "Windows")))
+        self.cpp_info.defines.append(
+            f'BACKWARD_HAS_BACKTRACE_SYMBOL={int(self._has_stack_details("backtrace_symbol"))}'
+        )
+        self.cpp_info.defines.append(
+            f'BACKWARD_HAS_DW={int(self._has_stack_details("dw"))}'
+        )
+        self.cpp_info.defines.append(
+            f'BACKWARD_HAS_BFD={int(self._has_stack_details("bfd"))}'
+        )
+        self.cpp_info.defines.append(
+            f'BACKWARD_HAS_DWARF={int(self._has_stack_details("dwarf"))}'
+        )
+        self.cpp_info.defines.append(
+            f'BACKWARD_HAS_PDB_SYMBOL={int(self.settings.os == "Windows")}'
+        )
 
         self.cpp_info.libs = ["backward"]
         if self.settings.os == "Linux":

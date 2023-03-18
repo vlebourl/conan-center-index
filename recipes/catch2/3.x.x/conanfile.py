@@ -134,14 +134,17 @@ class Catch2Conan(ConanFile):
         )
 
     def _create_cmake_module_alias_targets(self, module_file, targets):
-        content = ""
-        for alias, aliased in targets.items():
-            content += textwrap.dedent(f"""\
+        content = "".join(
+            textwrap.dedent(
+                f"""\
                 if(TARGET {aliased} AND NOT TARGET {alias})
                     add_library({alias} INTERFACE IMPORTED)
                     set_property(TARGET {alias} PROPERTY INTERFACE_LINK_LIBRARIES {aliased})
                 endif()
-            """)
+            """
+            )
+            for alias, aliased in targets.items()
+        )
         save(self, module_file, content)
 
     @property
@@ -156,10 +159,10 @@ class Catch2Conan(ConanFile):
         lib_suffix = "d" if self.settings.build_type == "Debug" else ""
         self.cpp_info.components["_catch2"].set_property("cmake_target_name", "Catch2::Catch2")
         self.cpp_info.components["_catch2"].set_property("pkg_config_name", "catch2")
-        self.cpp_info.components["_catch2"].libs = ["Catch2" + lib_suffix]
+        self.cpp_info.components["_catch2"].libs = [f"Catch2{lib_suffix}"]
 
         self.cpp_info.components["catch2_with_main"].builddirs.append(os.path.join("lib", "cmake", "Catch2"))
-        self.cpp_info.components["catch2_with_main"].libs = ["Catch2Main" + lib_suffix]
+        self.cpp_info.components["catch2_with_main"].libs = [f"Catch2Main{lib_suffix}"]
         self.cpp_info.components["catch2_with_main"].requires = ["_catch2"]
         self.cpp_info.components["catch2_with_main"].system_libs = ["log"] if self.settings.os == "Android" else []
         self.cpp_info.components["catch2_with_main"].set_property("cmake_target_name", "Catch2::Catch2WithMain")

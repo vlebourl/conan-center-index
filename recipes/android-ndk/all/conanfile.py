@@ -124,7 +124,7 @@ class AndroidNDKConan(ConanFile):
         assert match
         major, minor = match.groups()
         assert major
-        return int(major), minor if minor else "a"
+        return int(major), minor or "a"
 
     @property
     def _ndk_version_major(self):
@@ -142,10 +142,7 @@ class AndroidNDKConan(ConanFile):
                 filename = os.path.join(root, filename)
                 with open(filename, "rb") as f:
                     sig = f.read(4)
-                    if isinstance(sig, str):
-                        sig = [ord(s) for s in sig]
-                    else:
-                        sig = list(sig)
+                    sig = [ord(s) for s in sig] if isinstance(sig, str) else list(sig)
                     if len(sig) > 2 and sig[0] == 0x23 and sig[1] == 0x21:
                         self.output.info(f"chmod on script file: '{filename}'")
                         self._chmod_plus_x(filename)
@@ -264,7 +261,7 @@ class AndroidNDKConan(ConanFile):
             return
 
         # And if we are not building for Android, why bother at all
-        if not self.settings_target.os == "Android":
+        if self.settings_target.os != "Android":
             self.output.warning(f"You've added {self.ref} as a build requirement, while os={self.settings_target.os} != Android")
             return
 
@@ -325,8 +322,7 @@ class AndroidNDKConan(ConanFile):
             self.env_info.PATH.extend([os.path.join(self.package_folder, "bin"), os.path.join(self._ndk_root, "bin")])
             self.env_info.ANDROID_NDK_ROOT = os.path.join(self.package_folder, "bin")
             self.env_info.ANDROID_NDK_HOME = os.path.join(self.package_folder, "bin")
-            cmake_system_processor = self._cmake_system_processor
-            if cmake_system_processor:
+            if cmake_system_processor := self._cmake_system_processor:
                 self.env_info.CONAN_CMAKE_SYSTEM_PROCESSOR = cmake_system_processor
             else:
                 self.output.warning("Could not find a valid CMAKE_SYSTEM_PROCESSOR variable, supported by CMake")

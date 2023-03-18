@@ -21,7 +21,7 @@ class CrowConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = "crow-" + self.version
+        extracted_dir = f"crow-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     def build(self):

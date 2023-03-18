@@ -40,7 +40,10 @@ class TestPackageConan(ConanFile):
 
         # Work around the fact that "used_special_vars" in conans/client/tools/win.py doesn't handle ACLOCAL_PATH
         aclocal_path = "$ACLOCAL_PATH:" + self.deps_env_info.vars["ACLOCAL_PATH"][0].lower()
-        self.run("ACLOCAL_PATH={} autoreconf -fiv".format(aclocal_path), win_bash=self._settings_build.os == "Windows")
+        self.run(
+            f"ACLOCAL_PATH={aclocal_path} autoreconf -fiv",
+            win_bash=self._settings_build.os == "Windows",
+        )
         with self._build_context():
             autotools = AutoToolsBuildEnvironment(self, win_bash=self._settings_build.os == "Windows")
             autotools.libs = []

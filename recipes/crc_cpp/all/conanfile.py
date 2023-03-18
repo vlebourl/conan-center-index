@@ -24,24 +24,30 @@ class Crc_CppConan(ConanFile):
     def _supported_compiler(self):
         compiler = str(self.settings.compiler)
         version = Version(self.settings.compiler.version)
-        if compiler == "Visual Studio" and version >= "15":
-            return True
-        elif compiler == "gcc" and version >= "9":
-            return True
-        elif compiler == "clang" and version >= "5":
-            return True
-        elif compiler == "apple-clang" and version >= "10":
+        if (
+            compiler == "Visual Studio"
+            and version >= "15"
+            or compiler == "gcc"
+            and version >= "9"
+            or compiler == "clang"
+            and version >= "5"
+            or compiler == "apple-clang"
+            and version >= "10"
+        ):
             return True
         else:
-            self.output.warn("{} recipe lacks information about the {} compiler standard version support".format(self.name, compiler))
+            self.output.warn(
+                f"{self.name} recipe lacks information about the {compiler} compiler standard version support"
+            )
         return False
 
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
             tools.build.check_min_cppstd(self, "17")
         if not self._supported_compiler:
-            raise ConanInvalidConfiguration("crc_cpp: Unsupported compiler: {}-{} "
-                                            "Minimum C++17 constexpr features required.".format(self.settings.compiler, self.settings.compiler.version))
+            raise ConanInvalidConfiguration(
+                f"crc_cpp: Unsupported compiler: {self.settings.compiler}-{self.settings.compiler.version} Minimum C++17 constexpr features required."
+            )
     def source(self):
        tools.files.get(self, **self.conan_data["sources"][self.version], strip_root=True, destination=self._source_subfolder)
 

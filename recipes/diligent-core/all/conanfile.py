@@ -46,14 +46,17 @@ class DiligentCoreConan(ConanFile):
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
             check_min_cppstd(self, self._minimum_cpp_standard)
-        min_version = self._minimum_compilers_version.get(str(self.settings.compiler))
-        if not min_version:
-            self.output.warn("{} recipe lacks information about the {} compiler support.".format(
-                self.name, self.settings.compiler))
-        else:
+        if min_version := self._minimum_compilers_version.get(
+            str(self.settings.compiler)
+        ):
             if Version(self.settings.compiler.version) < min_version:
-                raise ConanInvalidConfiguration("{} requires C++{} support. The current compiler {} {} does not support it.".format(
-                    self.name, self._minimum_cpp_standard, self.settings.compiler, self.settings.compiler.version))
+                raise ConanInvalidConfiguration(
+                    f"{self.name} requires C++{self._minimum_cpp_standard} support. The current compiler {self.settings.compiler} {self.settings.compiler.version} does not support it."
+                )
+        else:
+            self.output.warn(
+                f"{self.name} recipe lacks information about the {self.settings.compiler} compiler support."
+            )
         if self.settings.compiler == "Visual Studio" and "MT" in self.settings.compiler.runtime:
             raise ConanInvalidConfiguration("Visual Studio build with MT runtime is not supported")
 
@@ -214,8 +217,10 @@ class DiligentCoreConan(ConanFile):
             self.cpp_info.includedirs.append(os.path.join("include", "DiligentCore", "Graphics", "GraphicsEngineD3D11", "interface"))
             self.cpp_info.includedirs.append(os.path.join("include", "DiligentCore", "Graphics", "GraphicsEngineD3D12", "interface"))
 
-        self.cpp_info.defines.append("SPIRV_CROSS_NAMESPACE_OVERRIDE={}".format(self.options["spirv-cross"].namespace))
-        self.cpp_info.defines.append("{}=1".format(self._diligent_platform()))
+        self.cpp_info.defines.append(
+            f'SPIRV_CROSS_NAMESPACE_OVERRIDE={self.options["spirv-cross"].namespace}'
+        )
+        self.cpp_info.defines.append(f"{self._diligent_platform()}=1")
 
         if self.settings.os in ["Macos", "Linux"]:
             self.cpp_info.system_libs = ["dl", "pthread"]

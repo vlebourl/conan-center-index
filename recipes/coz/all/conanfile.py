@@ -28,8 +28,8 @@ class CozConan(ConanFile):
         if self.settings.os == "Macos" or compiler == "Visual Studio" or (
                 compiler == "gcc" and compiler_version < "5.0"):
             raise ConanInvalidConfiguration(
-                "coz doesn't support compiler: {} on OS: {}.".format(
-                    self.settings.compiler, self.settings.os))
+                f"coz doesn't support compiler: {self.settings.compiler} on OS: {self.settings.os}."
+            )
         if self.settings.compiler.cppstd:
             tools.check_min_cppstd(self, "11")
 

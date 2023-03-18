@@ -86,9 +86,12 @@ class CairoConan(ConanFile):
             self.requires("freetype/2.12.1")
         if self.options.get_safe("with_fontconfig", False):
             self.requires("fontconfig/2.13.93")
-        if self.settings.os == "Linux":
-            if self.options.with_xlib or self.options.with_xlib_xrender or self.options.with_xcb:
-                self.requires("xorg/system")
+        if self.settings.os == "Linux" and (
+            self.options.with_xlib
+            or self.options.with_xlib_xrender
+            or self.options.with_xcb
+        ):
+            self.requires("xorg/system")
         if self.options.get_safe("with_glib", True):
             self.requires("glib/2.75.2")
         self.requires("zlib/1.2.13")
@@ -326,10 +329,9 @@ class CairoConan(ConanFile):
             self.cpp_info.components["cairo-pdf"].set_property("pkg_config_name", "cairo-pdf")
             self.cpp_info.components["cairo-pdf"].requires = ["cairo_", "zlib::zlib"]
 
-        if self.settings.os == "Linux":
-            if self.options.with_xlib:
-                self.cpp_info.components["cairo-xlib"].set_property("pkg_config_name", "cairo-xlib")
-                self.cpp_info.components["cairo-xlib"].requires = ["cairo_", "xorg::x11", "xorg::xext"]
+        if self.settings.os == "Linux" and self.options.with_xlib:
+            self.cpp_info.components["cairo-xlib"].set_property("pkg_config_name", "cairo-xlib")
+            self.cpp_info.components["cairo-xlib"].requires = ["cairo_", "xorg::x11", "xorg::xext"]
 
         if is_apple_os(self):
             self.cpp_info.components["cairo-quartz"].set_property("pkg_config_name", "cairo-quartz")

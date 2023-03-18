@@ -115,7 +115,6 @@ class CapnprotoConan(ConanFile):
             tc.variables["WITH_OPENSSL"] = self.options.with_openssl
             tc.generate()
             deps = CMakeDeps(self)
-            deps.generate()
         else:
             env = VirtualBuildEnv(self)
             env.generate()
@@ -135,7 +134,8 @@ class CapnprotoConan(ConanFile):
                 tc.extra_ldflags.append("-Wl,-rpath,@loader_path/../lib")
             tc.generate()
             deps = AutotoolsDeps(self)
-            deps.generate()
+
+        deps.generate()
 
     def build(self):
         apply_conandata_patches(self)

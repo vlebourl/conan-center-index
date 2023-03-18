@@ -27,8 +27,7 @@ class TestPackageConan(ConanFile):
 
     @property
     def _cmake_cxx_standard(self):
-        compileropt = self.settings.compiler.get_safe("cppstd")
-        if compileropt:
+        if compileropt := self.settings.compiler.get_safe("cppstd"):
             return str(compileropt)
         else:
             return "11"

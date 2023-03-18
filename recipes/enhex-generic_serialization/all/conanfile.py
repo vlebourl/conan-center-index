@@ -30,13 +30,16 @@ class EnhexGenericserializationConan(ConanFile):
         compiler_version = tools.Version(self.settings.compiler.version)
 
         if compiler not in minimal_version:
-            self.output.info("{} requires a compiler that supports at least C++17".format(self.name))
+            self.output.info(
+                f"{self.name} requires a compiler that supports at least C++17"
+            )
             return
 
         # Exclude compilers not supported
         if compiler_version < minimal_version[compiler]:
-            raise ConanInvalidConfiguration("{} requires a compiler that supports at least C++17. {} {} is not".format(
-                self.name, compiler, tools.Version(self.settings.compiler.version.value)))
+            raise ConanInvalidConfiguration(
+                f"{self.name} requires a compiler that supports at least C++17. {compiler} {tools.Version(self.settings.compiler.version.value)} is not"
+            )
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],

@@ -104,7 +104,7 @@ class AutomakeConan(ConanFile):
                 fullpath = os.path.join(binpath, filename)
                 if not os.path.isfile(fullpath):
                     continue
-                os.rename(fullpath, fullpath + ".exe")
+                os.rename(fullpath, f"{fullpath}.exe")
 
     @property
     def _automake_libdir(self):

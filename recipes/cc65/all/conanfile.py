@@ -32,7 +32,7 @@ class Cc65Conan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = self.name + "-" + self.version
+        extracted_dir = f"{self.name}-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     @property
@@ -50,7 +50,7 @@ class Cc65Conan(ConanFile):
         }
         arch = str(self.settings.arch)
         if arch != "x86":
-            self.output.warn("{} detected: building x86 instead".format(self.settings.arch))
+            self.output.warn(f"{self.settings.arch} detected: building x86 instead")
             arch = "x86"
 
         msbuild.build(os.path.join(self._source_subfolder, "src", "cc65.sln"),
@@ -75,11 +75,7 @@ class Cc65Conan(ConanFile):
             datadir = tools.unix_path(datadir)
             prefix = tools.unix_path(prefix)
             samplesdir = tools.unix_path(samplesdir)
-        args = [
-            "PREFIX={}".format(prefix),
-            "datadir={}".format(datadir),
-            "samplesdir={}".format(samplesdir),
-        ]
+        args = [f"PREFIX={prefix}", f"datadir={datadir}", f"samplesdir={samplesdir}"]
         if self.settings.os == "Windows":
             args.append("EXE_SUFFIX=.exe")
         return args
@@ -102,7 +98,7 @@ class Cc65Conan(ConanFile):
         if self.settings.os == "Windows":
             # Add ".exe" suffix to calls from cl65 to other utilities
             for fn, var in (("cc65", "CC65"), ("ca65", "CA65"), ("co65", "CO65"), ("ld65", "LD65"), ("grc65", "GRC")):
-                v = "{},".format(var).ljust(5)
+                v = f"{var},".ljust(5)
                 tools.replace_in_file(os.path.join(self._source_subfolder, "src", "cl65", "main.c"),
                                       "CmdInit (&{v} CmdPath, \"{n}\");".format(v=v, n=fn),
                                       "CmdInit (&{v} CmdPath, \"{n}.exe\");".format(v=v, n=fn))
@@ -136,28 +132,30 @@ class Cc65Conan(ConanFile):
 
     def package_id(self):
         del self.info.settings.compiler
-        if self.settings.compiler == "Visual Studio":
-            if self.settings.arch == "x86_64":
-                self.info.settings.arch = "x86"
+        if (
+            self.settings.compiler == "Visual Studio"
+            and self.settings.arch == "x86_64"
+        ):
+            self.info.settings.arch = "x86"
 
     def package_info(self):
         bindir = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: %s" % bindir)
+        self.output.info(f"Appending PATH environment variable: {bindir}")
         self.env_info.PATH.append(bindir)
 
-        self.output.info("Seting CC65_HOME environment variable: %s" % self._datadir)
+        self.output.info(f"Seting CC65_HOME environment variable: {self._datadir}")
         self.env_info.CC65_HOME = self._datadir
 
         bin_ext = ".exe" if self.settings.os == "Windows" else ""
 
-        cc65_cc = os.path.join(bindir, "cc65" + bin_ext)
-        self.output.info("Seting CC65 environment variable: {}".format(cc65_cc))
+        cc65_cc = os.path.join(bindir, f"cc65{bin_ext}")
+        self.output.info(f"Seting CC65 environment variable: {cc65_cc}")
         self.env_info.CC65 = cc65_cc
 
-        cc65_as = os.path.join(bindir, "ca65" + bin_ext)
-        self.output.info("Seting AS65 environment variable: {}".format(cc65_as))
+        cc65_as = os.path.join(bindir, f"ca65{bin_ext}")
+        self.output.info(f"Seting AS65 environment variable: {cc65_as}")
         self.env_info.AS65 = cc65_as
 
-        cc65_ld = os.path.join(bindir, "cl65" + bin_ext)
-        self.output.info("Seting LD65 environment variable: {}".format(cc65_ld))
+        cc65_ld = os.path.join(bindir, f"cl65{bin_ext}")
+        self.output.info(f"Seting LD65 environment variable: {cc65_ld}")
         self.env_info.LD65 = cc65_ld

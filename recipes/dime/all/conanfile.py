@@ -78,12 +78,7 @@ class DimeConan(ConanFile):
     def package_info(self):
         libname = "dime"
         if self.settings.os == "Windows" and is_msvc(self):
-            libname = "{}{}{}{}".format(
-                libname,
-                tools.Version(self.version).major,
-                "" if self.options.shared else "s",
-                "d" if self.settings.build_type == "Debug" else "",
-                )
+            libname = f'{libname}{tools.Version(self.version).major}{"" if self.options.shared else "s"}{"d" if self.settings.build_type == "Debug" else ""}'
         self.cpp_info.libs = [libname]
 
         if self.settings.os == "Windows":
@@ -92,5 +87,5 @@ class DimeConan(ConanFile):
             self.cpp_info.cxxflags.append("-DDIME_FIXBIG")
 
         bindir = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(bindir))
+        self.output.info(f"Appending PATH environment variable: {bindir}")
         self.env_info.PATH.append(bindir)

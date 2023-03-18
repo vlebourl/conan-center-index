@@ -104,23 +104,18 @@ class CernRootConan(ConanFile):
     def _enforce_minimum_compiler_version(self):
         if self.settings.compiler.get_safe("cppstd"):
             tools.check_min_cppstd(self, self._minimum_cpp_standard)
-        min_version = self._minimum_compilers_version.get(str(self.settings.compiler))
-        if not min_version:
-            self.output.warn(
-                "{} recipe lacks information about the {} compiler support.".format(
-                    self.name, self.settings.compiler
-                )
-            )
-        else:
+        if min_version := self._minimum_compilers_version.get(
+            str(self.settings.compiler)
+        ):
             if tools.Version(self.settings.compiler.version) < min_version:
                 raise ConanInvalidConfiguration(
-                    "{} requires C++{} support. The current compiler {} {} does not support it.".format(
-                        self.name,
-                        self._minimum_cpp_standard,
-                        self.settings.compiler,
-                        self.settings.compiler.version,
-                    )
+                    f"{self.name} requires C++{self._minimum_cpp_standard} support. The current compiler {self.settings.compiler} {self.settings.compiler.version} does not support it."
                 )
+
+        else:
+            self.output.warn(
+                f"{self.name} recipe lacks information about the {self.settings.compiler} compiler support."
+            )
 
     def _enforce_libcxx_requirements(self):
         compiler = self.settings.compiler
@@ -128,9 +123,7 @@ class CernRootConan(ConanFile):
         # ROOT doesn't currently build with libc++.
         # This restriction may be lifted in future if the problems are fixed upstream
         if libcxx and libcxx == "libc++":
-            raise ConanInvalidConfiguration(
-                '{} is incompatible with libc++".'.format(self.name)
-            )
+            raise ConanInvalidConfiguration(f'{self.name} is incompatible with libc++".')
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],
@@ -263,7 +256,7 @@ class CernRootConan(ConanFile):
     def _move_findcmake_conan_to_root_dir(self):
         for f in ["opengl_system", "GLEW", "glu", "TBB", "LibXml2", "ZLIB", "SQLite3"]:
             shutil.copy(
-                "Find{}.cmake".format(f),
+                f"Find{f}.cmake",
                 os.path.join(
                     self.source_folder, self._source_subfolder, "cmake", "modules"
                 ),
@@ -275,10 +268,7 @@ class CernRootConan(ConanFile):
 
     @property
     def _cmake_pyrootopt(self):
-        if self.options.python == PythonOption.OFF:
-            return False
-        else:
-            return True
+        return self.options.python != PythonOption.OFF
 
     def build(self):
         self._patch_sources()

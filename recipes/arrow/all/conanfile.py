@@ -200,9 +200,12 @@ class ArrowConan(ConanFile):
         if self.options.with_s3 and not self.options["aws-sdk-cpp"].config:
             raise ConanInvalidConfiguration("arrow:with_s3 requires aws-sdk-cpp:config is True.")
 
-        if self.options.shared and self._with_jemalloc():
-            if self.options["jemalloc"].enable_cxx:
-                raise ConanInvalidConfiguration("jemmalloc.enable_cxx of a static jemalloc must be disabled")
+        if (
+            self.options.shared
+            and self._with_jemalloc()
+            and self.options["jemalloc"].enable_cxx
+        ):
+            raise ConanInvalidConfiguration("jemmalloc.enable_cxx of a static jemalloc must be disabled")
 
         if Version(self.version) < "6.0.0" and self.options.get_safe("simd_level") == "default":
             raise ConanInvalidConfiguration(f"In {self.ref}, simd_level options is not supported `default` value.")
@@ -230,19 +233,19 @@ class ArrowConan(ConanFile):
 
     def _with_jemalloc(self, required=False):
         if required or self.options.with_jemalloc == "auto":
-            return bool("BSD" in str(self.settings.os))
+            return "BSD" in str(self.settings.os)
         else:
             return bool(self.options.with_jemalloc)
 
     def _with_re2(self, required=False):
-        if required or self.options.with_re2 == "auto":
-            if self.options.gandiva or self.options.parquet:
-                return True
-            if Version(self) >= "7.0.0" and (self._compute() or self._dataset_modules()):
-                return True
-            return False
-        else:
+        if not required and self.options.with_re2 != "auto":
             return bool(self.options.with_re2)
+        if self.options.gandiva or self.options.parquet:
+            return True
+        return bool(
+            Version(self) >= "7.0.0"
+            and (self._compute() or self._dataset_modules())
+        )
 
     def _with_protobuf(self, required=False):
         if required or self.options.with_protobuf == "auto":
@@ -275,19 +278,18 @@ class ArrowConan(ConanFile):
             return bool(self.options.with_grpc)
 
     def _with_boost(self, required=False):
-        if required or self.options.with_boost == "auto":
-            if self.options.gandiva:
-                return True
-            version = Version(self.version)
-            if version.major == "1":
-                if self._parquet() and self.settings.compiler == "gcc" and self.settings.compiler.version < Version("4.9"):
-                    return True
-            elif version.major >= "2":
-                if is_msvc(self):
-                    return True
-            return False
-        else:
+        if not required and self.options.with_boost != "auto":
             return bool(self.options.with_boost)
+        if self.options.gandiva:
+            return True
+        version = Version(self.version)
+        if version.major == "1":
+            if self._parquet() and self.settings.compiler == "gcc" and self.settings.compiler.version < Version("4.9"):
+                return True
+        elif version.major >= "2":
+            if is_msvc(self):
+                return True
+        return False
 
     def _with_thrift(self, required=False):
         # No self.options.with_thift exists
@@ -314,9 +316,7 @@ class ArrowConan(ConanFile):
     def _with_rapidjson(self):
         if self.options.with_json:
             return True
-        if Version(self.version) >= "7.0.0" and self.options.encryption:
-            return True
-        return False
+        return bool(Version(self.version) >= "7.0.0" and self.options.encryption)
 
     def requirements(self):
         if self._with_thrift():
@@ -342,11 +342,7 @@ class ArrowConan(ConanFile):
         if self._with_llvm():
             self.requires("llvm-core/13.0.0")
         if self._with_openssl():
-            # aws-sdk-cpp requires openssl/1.1.1. it uses deprecated functions in openssl/3.0.0
-            if self.options.with_s3:
-                self.requires("openssl/1.1.1s")
-            else:
-                self.requires("openssl/1.1.1s")
+            self.requires("openssl/1.1.1s")
         if self.options.get_safe("with_opentelemetry"):
             self.requires("opentelemetry-cpp/1.7.0")
         if self.options.with_s3:
@@ -360,8 +356,8 @@ class ArrowConan(ConanFile):
         if self.options.with_snappy:
             self.requires("snappy/1.1.9")
         if Version(self.version) >= "6.0.0" and \
-            self.options.get_safe("simd_level") != None or \
-            self.options.get_safe("runtime_simd_level") != None:
+                self.options.get_safe("simd_level") != None or \
+                self.options.get_safe("runtime_simd_level") != None:
             self.requires("xsimd/9.0.1")
         if self.options.with_zlib:
             self.requires("zlib/1.2.13")
@@ -537,9 +533,9 @@ class ArrowConan(ConanFile):
 
     def _lib_name(self, name):
         if is_msvc(self) and not self.options.shared:
-            return "{}_static".format(name)
+            return f"{name}_static"
         else:
-            return "{}".format(name)
+            return f"{name}"
 
     def package_id(self):
         self.info.options.with_gflags = self._with_gflags()

@@ -94,12 +94,8 @@ class bxConan(ConanFile):
     def generate(self):
         vbe = VirtualBuildEnv(self)
         vbe.generate()
-        if is_msvc(self):
-            tc = VCVars(self)
-            tc.generate()
-        else:
-            tc = AutotoolsToolchain(self)
-            tc.generate()
+        tc = VCVars(self) if is_msvc(self) else AutotoolsToolchain(self)
+        tc.generate()
 
     def build(self):
         if is_msvc(self):
@@ -178,7 +174,7 @@ class bxConan(ConanFile):
 
         # Get build bin folder
         for bx_out_dir in os.listdir(os.path.join(self._bx_path, ".build")):
-            if not bx_out_dir=="projects":
+            if bx_out_dir != "projects":
                 build_bin = os.path.join(self._bx_path, ".build", bx_out_dir, "bin")
                 break
 
@@ -193,7 +189,7 @@ class bxConan(ConanFile):
         if self.options.tools:
             copy(self, pattern="bin2c*", dst=os.path.join(self.package_folder, "bin"), src=build_bin, keep_path=False)
             copy(self, pattern="lemon*", dst=os.path.join(self.package_folder, "bin"), src=build_bin, keep_path=False)
-        
+
         # Rename for consistency across platforms and configs
         for bx_file in Path(os.path.join(self.package_folder, "lib")).glob("*bx*"):
             rename(self, os.path.join(self.package_folder, "lib", bx_file.name), 

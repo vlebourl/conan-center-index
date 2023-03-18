@@ -97,8 +97,14 @@ class Catch2Conan(ConanFile):
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "Catch2")
-        self.cpp_info.set_property("cmake_target_name", "Catch2::Catch2{}".format("WithMain" if self.options.with_main else ""))
-        self.cpp_info.set_property("pkg_config_name", "catch2{}".format("-with-main" if self.options.with_main else ""))
+        self.cpp_info.set_property(
+            "cmake_target_name",
+            f'Catch2::Catch2{"WithMain" if self.options.with_main else ""}',
+        )
+        self.cpp_info.set_property(
+            "pkg_config_name",
+            f'catch2{"-with-main" if self.options.with_main else ""}',
+        )
 
         defines = []
         if self.options.get_safe("with_benchmark", False):

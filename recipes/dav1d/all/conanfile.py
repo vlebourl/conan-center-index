@@ -122,7 +122,7 @@ def fix_msvc_libname(conanfile, remove_lib_prefix=True):
         for ext in [".dll.a", ".dll.lib", ".a"]:
             full_folder = os.path.join(conanfile.package_folder, libdir)
             for filepath in glob.glob(os.path.join(full_folder, f"*{ext}")):
-                libname = os.path.basename(filepath)[0:-len(ext)]
-                if remove_lib_prefix and libname[0:3] == "lib":
+                libname = os.path.basename(filepath)[:-len(ext)]
+                if remove_lib_prefix and libname[:3] == "lib":
                     libname = libname[3:]
                 rename(conanfile, filepath, os.path.join(os.path.dirname(filepath), f"{libname}.lib"))

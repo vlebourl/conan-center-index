@@ -25,10 +25,10 @@ class ArchicadApidevkitConan(ConanFile):
         if is_msvc(self):
             # Approximate requirement for toolset >= v142
             check_min_vs(self, "192")
-        if not self.info.settings.os in ("Macos", "Windows"):
+        if self.info.settings.os not in ("Macos", "Windows"):
             raise ConanInvalidConfiguration(
                 f"{self.ref} is not supported by the OS {self.info.settings.os}")
-        if not str(self.settings.arch) in ("x86_64"):
+        if str(self.settings.arch) not in "x86_64":
             raise ConanInvalidConfiguration(
                 f"{self.ref} is not supported yet.")
         if self.settings.compiler == "Visual Studio" and Version(self.settings.compiler.version) < "16":

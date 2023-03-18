@@ -17,7 +17,7 @@ class RandomConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        os.rename("random-" + self.version, self._source_subfolder)
+        os.rename(f"random-{self.version}", self._source_subfolder)
 
     def package(self):
         self.copy("LICENSE.MIT", dst="licenses", src=self._source_subfolder)

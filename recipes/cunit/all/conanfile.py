@@ -76,15 +76,15 @@ class CunitConan(ConanFile):
         env = {}
         if self.settings.compiler == "Visual Studio":
             with tools.vcvars(self.settings):
-                env.update({
-                    "AR": "{} lib".format(tools.unix_path(self._user_info_build["automake"].ar_lib)),
-                    "CC": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
-                    "CXX": "{} cl -nologo".format(tools.unix_path(self._user_info_build["automake"].compile)),
+                env |= {
+                    "AR": f'{tools.unix_path(self._user_info_build["automake"].ar_lib)} lib',
+                    "CC": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
+                    "CXX": f'{tools.unix_path(self._user_info_build["automake"].compile)} cl -nologo',
                     "NM": "dumpbin -symbols",
                     "OBJDUMP": ":",
                     "RANLIB": ":",
                     "STRIP": ":",
-                })
+                }
                 with tools.environment_append(env):
                     yield
         else:
@@ -121,7 +121,10 @@ class CunitConan(ConanFile):
             tools.patch(**patch)
         with self._build_context():
             with tools.chdir(self._source_subfolder):
-                self.run("{} -fiv".format(tools.get_env("AUTORECONF")), win_bash=tools.os_info.is_windows)
+                self.run(
+                    f'{tools.get_env("AUTORECONF")} -fiv',
+                    win_bash=tools.os_info.is_windows,
+                )
                 autotools = self._configure_autotools()
                 autotools.make()
 

@@ -24,7 +24,7 @@ class CppItertoolsConan(ConanFile):
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
-        extracted_dir = self.name + "-" + self.version
+        extracted_dir = f"{self.name}-{self.version}"
         os.rename(extracted_dir, self._source_subfolder)
 
     def validate(self):
@@ -41,13 +41,16 @@ class CppItertoolsConan(ConanFile):
         compiler_version = tools.Version(self.settings.compiler.version)
 
         if compiler not in minimal_version:
-            self.output.info("{} requires a compiler that supports at least C++17".format(self.name))
+            self.output.info(
+                f"{self.name} requires a compiler that supports at least C++17"
+            )
             return
 
         # Exclude compilers not supported by cppitertools
         if compiler_version < minimal_version[compiler]:
-            raise ConanInvalidConfiguration("{} requires a compiler that supports at least C++17. {} {} is not".format(
-                self.name, compiler, tools.Version(self.settings.compiler.version.value)))
+            raise ConanInvalidConfiguration(
+                f"{self.name} requires a compiler that supports at least C++17. {compiler} {tools.Version(self.settings.compiler.version.value)} is not"
+            )
 
     def requirements(self):
         if self.options.zip_longest:

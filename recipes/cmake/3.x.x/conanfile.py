@@ -90,16 +90,28 @@ class CMakeConan(ConanFile):
             tc.generate()
             tc = AutotoolsDeps(self)
             tc.generate()
-            bootstrap_cmake_options = ["--"]
-            bootstrap_cmake_options.append(f'-DCMAKE_CXX_STANDARD={"11" if not self.settings.compiler.cppstd else self.settings.compiler.cppstd}')
+            bootstrap_cmake_options = [
+                "--",
+                f'-DCMAKE_CXX_STANDARD={self.settings.compiler.cppstd or "11"}',
+            ]
             if self.settings.os == "Linux":
                 if self.options.with_openssl:
                     openssl = self.dependencies["openssl"]
-                    bootstrap_cmake_options.append("-DCMAKE_USE_OPENSSL=ON")
-                    bootstrap_cmake_options.append(f'-DOPENSSL_USE_STATIC_LIBS={"FALSE" if openssl.options.shared else "TRUE"}')
+                    bootstrap_cmake_options.extend(
+                        (
+                            "-DCMAKE_USE_OPENSSL=ON",
+                            f'-DOPENSSL_USE_STATIC_LIBS={"FALSE" if openssl.options.shared else "TRUE"}',
+                        )
+                    )
                 else:
                     bootstrap_cmake_options.append("-DCMAKE_USE_OPENSSL=OFF")
-            save(self, "bootstrap_args", json.dumps({"bootstrap_cmake_options": ' '.join(arg for arg in bootstrap_cmake_options)}))
+            save(
+                self,
+                "bootstrap_args",
+                json.dumps(
+                    {"bootstrap_cmake_options": ' '.join(bootstrap_cmake_options)}
+                ),
+            )
         else:
             tc = CMakeToolchain(self)
             # Disabling testing because CMake tests build can fail in Windows in some cases

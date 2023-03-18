@@ -23,7 +23,7 @@ class BazelConan(ConanFile):
     @property
     def _bazel_filename(self):
         platform = "darwin" if self.settings.os == "Macos" else str(self.settings.os).lower()
-        return "bazel-{}-{}-{}{}".format(self.version, platform, self.settings.arch, self._program_suffix)
+        return f"bazel-{self.version}-{platform}-{self.settings.arch}{self._program_suffix}"
 
     def validate(self):
         if self.settings.arch != "x86_64":
@@ -43,7 +43,9 @@ class BazelConan(ConanFile):
         self.copy(pattern="LICENSE", dst="licenses")
         self.copy(pattern=self._bazel_filename, dst="bin")
         old_target_filename = os.path.join(self.package_folder, "bin", self._bazel_filename)
-        new_target_filename = os.path.join(self.package_folder, "bin", "bazel" + self._program_suffix)
+        new_target_filename = os.path.join(
+            self.package_folder, "bin", f"bazel{self._program_suffix}"
+        )
         tools.rename(old_target_filename, new_target_filename)
         self._chmod_plus_x(new_target_filename)
 

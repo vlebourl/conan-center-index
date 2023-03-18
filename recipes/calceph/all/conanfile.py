@@ -67,7 +67,6 @@ class CalcephConan(ConanFile):
     def generate(self):
         if is_msvc(self):
             tc = NMakeToolchain(self)
-            tc.generate()
         else:
             env = VirtualBuildEnv(self)
             env.generate()
@@ -81,7 +80,8 @@ class CalcephConan(ConanFile):
                 "--disable-python-package-user",
                 "--disable-mex-octave",
             ])
-            tc.generate()
+
+        tc.generate()
 
     @property
     def _nmake_args(self):
